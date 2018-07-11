@@ -15,6 +15,7 @@ class User(db.Model):
 	fname = db.Column(db.String(50), nullable=False)
 	lname = db.Column(db.String(50), nullable=False)
 
+
 	def __repr__(self):
 
 		s = """
@@ -30,20 +31,22 @@ class User(db.Model):
 		return s
 
 
-class UserPlaylist(db.Model):
+class Playlist(db.Model):
 	"""List of user's playlists."""
 
-	__tablename__ = "user_playlists"
+	__tablename__ = "playlists"
 
 	playlist_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
 	user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
-	playlist_name = db.Column(db.String(70))
+	title = db.Column(db.String(70))
 
 	user = db.relationship('User',
-							backref=db.backref('user_playlists'))
+							backref=db.backref('playlists'))
 
-	podcasts = db.relationship('PlaylistPodcast',
-								backref=db.backref('user_playlists'))
+	tracks = db.relationship('Track',
+							 secondary='track_playlist',
+							 backref=db.backref('playlists'))
+
 
 	def __repr__(self):
 
@@ -51,57 +54,71 @@ class UserPlaylist(db.Model):
 		<UserPlaylist:
 		playlist_id = {}
 		user_id = {}
-		playlist_name = {}>
-		""".format(self.playlist_id, self.user_id, self.playlist_name)
+		title = {}>
+		""".format(self.playlist_id, self.user_id, self.title)
 
 		return s
 
 
-class PlaylistPodcast(db.Model):
+class Track(db.Model):
 	"""List of podcasts in a user's playlist."""
 
-	__tablename__ = "playlist_podcasts"
+	__tablename__ = "tracks"
 
-	podcast_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-	playlist_id = db.Column(db.Integer,
-							db.ForeignKey('user_playlists.playlist_id'))
+	track_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	artist = db.Column(db.String(50))
+	title = db.Column(db.String(50), nullable=False)
 
 
 	def __repr__(self):
 
 		s = """
 		<PlaylistPodcast:
-		podcast_id = {}
-		playlist_id = {}>
-		""".format(self.podcast_id, self.playlist_id)
+		track_id = {}
+		artist = {}
+		title = {}>
+		""".format(self.track_id, self.artist, self.title)
 
 		return s
 
 
-class UserRelationship(db.Model):
+class TrackPlaylist(db.Model):
+	"""Association table between Playlist and Track."""
+
+	__tablename__ = "track_playlist"
+
+	tp_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	playlist_id = db.Column(db.Integer,
+							db.ForeignKey('playlists.playlist_id'),
+							nullable=False)
+	track_id = db.Column(db.Integer,
+						 db.ForeignKey('tracks.track_id'),
+						 nullable=False)
+
+
+
+class Friendship(db.Model):
 	"""Define relationship between two users."""
 
-	__tablename__ = "user_relationships"
+	__tablename__ = "friendships"
 	
-	# relationship_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-	user_one_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), primary_key=True)
-	user_two_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), primary_key=True)
-	status = db.Column(db.String(20), nullable=False)
+	friendship_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	user_one_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+	user_two_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
 
 	# must be tuple, dictionary
 	__table_args__ = (db.UniqueConstraint('user_one_id', 'user_two_id', name='relationship_check'),)
-
 
 	def __repr__(self):
 
 		s = """
 		<UserRelationship:
+		Friendship_id = {}
 		user_one_id = {}
-		user_two_id = {}
-		status = {}>
-		""".format(self.user_one_id,
-				   self.user_two_id,
-				   self.status)
+		user_two_id = {}>
+		""".format(self.friendship_id,
+				   self.user_one_id,
+				   self.user_two_id)
 
 		return s
 	
@@ -123,46 +140,6 @@ def connect_to_db(app):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
     db.init_app(app)
-
-
-def load_data():
-
-	u1 = User(user_id=1, username='henrypcast', email='henry@gmail.com', password='123', fname='henry', lname='marsman')
-	u2 = User(user_id=2, username='milliegirl', email='dogemail@gmail.com', password='bacon', fname='millie', lname='louise')
-
-	users = [u1, u2]
-
-	pl1 = UserPlaylist(playlist_id=1, user_id=1, playlist_name='science')
-	pl2 = UserPlaylist(playlist_id=2, user_id=1, playlist_name='henryshistory')
-	pl3 = UserPlaylist(playlist_id=3, user_id=2, playlist_name='millielistens')
-	pl4 = UserPlaylist(playlist_id=4, user_id=2, playlist_name='milandmath')
-
-	playlists = [pl1, pl2, pl3, pl4]
-
-	pcast1 = PlaylistPodcast(playlist_id=1, podcast_id=1)
-	pcast2 = PlaylistPodcast(playlist_id=1, podcast_id=2)
-	pcast3 = PlaylistPodcast(playlist_id=1, podcast_id=3)
-	pcast4 = PlaylistPodcast(playlist_id=2, podcast_id=4)
-	pcast5 = PlaylistPodcast(playlist_id=2, podcast_id=5)
-	pcast6 = PlaylistPodcast(playlist_id=3, podcast_id=6)
-	pcast7 = PlaylistPodcast(playlist_id=3, podcast_id=7)
-	pcast8 = PlaylistPodcast(playlist_id=4, podcast_id=8)
-	pcast9 = PlaylistPodcast(playlist_id=4, podcast_id=9)
-	pcast10 = PlaylistPodcast(playlist_id=4, podcast_id=10)
-
-	pcasts = [pcast1, pcast2, pcast3, pcast4, pcast5, pcast6, pcast7, pcast8, pcast9, pcast10]
-
-	data = []
-	data.extend(users)
-	data.extend(playlists)
-	data.extend(pcasts)
-
-	print(data)
-
-	for d in data:
-		db.session.add(d)
-
-	db.session.commit()
 
 
 if __name__ == "__main__":
