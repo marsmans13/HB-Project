@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2> Hello, {{ session.get('username') }} </h2>
+
+<h2>Playlists</h3>
+
+<!-- <iframe sandbox="allow-same-origin allow-scripts allow-top-navigation allow-popups" scrolling=no width="100%" height="185" frameborder="0" src="https://embed.radiopublic.com/e?if=FreshAir">
+</iframe> -->
+
+<!-- 
+<div style="overflow: hidden;">
+<iframe src="https://feeds.megaphone.fm/stufftoblowyourmind" scrolling="auto width="100%" frameborder="0"
+height="980px" allowtransparency="no" allowfullscreen="allowfullscreen"
+style="margin: -80px 0 -400px 0;"></iframe>
+</div> -->
+<h2> Add a new playlist </h2>
+<form action="/add-playlist" method='post'>
+	Playlist Name: <input type="text" name="playlist-name"><br>
+	Description: <input type="text" name="description"><br>
+	<input type='submit' value='New Playlist' id='new-playlist'>
+</form>
+
+<!-- <div name='playlist-popup' id='add-playlist'></div> -->
+
+<h3>iTunes Widget</h3>
+
+<iframe src="https://widgets.itunes.apple.com/widget.html?c=us&brc=FFFFFF&blc=FFFFFF&trc=FFFFFF&tlc=FFFFFF&d={{ playlistDescription }}&t={{ playlistTitle }}&m=podcast&e=podcast&w=250&h=300&ids={{ trackId }}&wt=playlist&partnerId=&affiliate_id=&at=&ct=" frameborder=0 style="overflow-x:hidden;overflow-y:hidden;width:250px;height: 300px;border:0px"></iframe>
+
+
+<h3>Fresh Air</h3>
+
+<iframe src="https://widgets.itunes.apple.com/widget.html?c=us&brc=FFFFFF&blc=FFFFFF&trc=FFFFFF&tlc=FFFFFF&d=this is fresh air with terry gross&t=fresh air&m=podcast&e=podcast&w=250&h=300&ids=214089682,1391379435&wt=playlist&partnerId=&affiliate_id=&at=&ct=" frameborder=0 style="overflow-x:hidden;overflow-y:hidden;width:250px;height: 300px;border:0px"></iframe>
+
+{% endblock %}

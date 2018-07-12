@@ -51,7 +51,7 @@ class Playlist(db.Model):
 	def __repr__(self):
 
 		s = """
-		<UserPlaylist:
+		<Playlist:
 		playlist_id = {}
 		user_id = {}
 		title = {}>
@@ -73,7 +73,7 @@ class Track(db.Model):
 	def __repr__(self):
 
 		s = """
-		<PlaylistPodcast:
+		<Track:
 		track_id = {}
 		artist = {}
 		title = {}>
@@ -112,7 +112,7 @@ class Friendship(db.Model):
 	def __repr__(self):
 
 		s = """
-		<UserRelationship:
+		<Friendship:
 		Friendship_id = {}
 		user_one_id = {}
 		user_two_id = {}>

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2> Website Name </h2>
+
+<h3>Results</h3>
+
+{% if results %}
+
+{% for result in results %}
+{% if result['wrapperType'] == 'track' %}
+<h3> Title: <a href="{{ result['trackViewUrl'] }}">{{ result['trackName'] }}</a></h3>
+<p> Artist: {{ result['artistName'] }} </p>
+<p> Collection: {{ result['collectionName'] }} </p>
+<p> Kind: {{ result['kind'] }} </p>
+{% endif %}
+{% endfor %}
+
+{% endif %}
+
+{% endblock %}
