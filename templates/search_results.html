@@ -7,24 +7,57 @@
 
 {% if results %}
 {% for result in results %}
-<!-- <p> {{result}} </p> -->
+<p> {{ result }} </p>
+
+{% for r in result %}
+<p> {{ r }}: {{ result[r] }}</p>
+{% endfor %}
+
 <p>Artist:  {{ result['artistName'] }} </p>
 <h3>Collection:
 </h3><a href="{{ result['trackViewUrl'] }}">{{ result['collectionName'] }}</a>
 <br>
 <img src="{{ result['artworkUrl60'] }}" /> 
-{% endfor %}
+
+{% if result.get('feedUrl') %}
+<div>
+Preview: <br><audio controls src="{{ result['feedUrl'] }}">Your browser doesn't support the audio element.</audio>
+</div>
+{% else %}
+<p>No preview available.</p>
 {% endif %}
+
+{% endfor %}
+
+{% endif %}
+<br>
+
 
 {% if sp_response %}
 
-<h3>Collection: </h3>
-<a href="{{ sp_response['external_urls']['spotify'] }}">
-	{{ sp_response['artists'][0]['name'] }}
-</a>
+{% for resp in sp_response %}
+<h3>Episode: <a href="{{ resp['external_urls']['spotify'] }}"> {{ resp['name'] }}
+	</a>
+</h3>
+	
+<p>Artist: {{ resp['artists'][0]['name'] }}</p>
+<p>
+	Collection: <a href="{{ resp['external_urls']['spotify'] }}"> {{ resp['album']['name'] }}</a>
+</p>
+<img src="{{ resp['album']['images'][2]['url'] }}" /> 
+<div>
+Preview: <br><audio controls src="{{ resp['preview_url'] }}">Your browser doesn't support the audio element.</audio>
+</div>
+
+
 <br>
-<img src="{{ sp_response['images'][2]['url'] }}" /> 
-<!-- <p>{{ sp_response }}</p> -->
+
+{% endfor %}
+
 {% endif %}
+{% for r in raw %}
+<p> {{ r }}: {{ raw[r] }}</p>
+<br>
+{% endfor %}
 
 {% endblock %}

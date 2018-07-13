@@ -291,18 +291,23 @@ def search_podcasts():
 
 	payload = {
 		'q': search_input,
-		'limit': 10,
-		'type': 'track,artist'
+		'limit': 20,
+		'type': 'track'
 	}
 
 	headers = {"Authorization":"Bearer {}".format(session['token'])}
 
-	response_sp = requests.get('https://api.spotify.com/v1/search',
+	sp_response = requests.get('https://api.spotify.com/v1/search',
 								params=payload, headers=headers).json()
 
-	response = response_sp['tracks']['items'][0]['album']
+	raw = sp_response['tracks']
 
-	return render_template("search_results.html", sp_response=response, results=results)
+	if sp_response.get('tracks'):
+		sp_response = sp_response['tracks']['items']
+	else:
+		sp_reponse = []
+
+	return render_template("search_results.html", sp_response=sp_response, results=results, raw=raw)
 
 
 @app.route("/add-playlist", methods=['POST'])
