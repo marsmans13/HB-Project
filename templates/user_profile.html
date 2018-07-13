@@ -14,7 +14,15 @@
 height="980px" allowtransparency="no" allowfullscreen="allowfullscreen"
 style="margin: -80px 0 -400px 0;"></iframe>
 </div> -->
-<h2> Add a new playlist </h2>
+
+<h3>Search Podcasts</h3>
+
+<form action="/search-submit" method="GET">
+Search <input type="search" name="q" id="search-form">
+<input type="submit" value="Submit">
+</form>
+
+<h3> Add a new playlist </h3>
 <form action="/add-playlist" method='post'>
 	Playlist Name: <input type="text" name="playlist-name"><br>
 	Description: <input type="text" name="description"><br>
@@ -27,9 +35,5 @@ style="margin: -80px 0 -400px 0;"></iframe>
 
 <iframe src="https://widgets.itunes.apple.com/widget.html?c=us&brc=FFFFFF&blc=FFFFFF&trc=FFFFFF&tlc=FFFFFF&d={{ playlistDescription }}&t={{ playlistTitle }}&m=podcast&e=podcast&w=250&h=300&ids={{ trackId }}&wt=playlist&partnerId=&affiliate_id=&at=&ct=" frameborder=0 style="overflow-x:hidden;overflow-y:hidden;width:250px;height: 300px;border:0px"></iframe>
 
-
-<h3>Fresh Air</h3>
-
-<iframe src="https://widgets.itunes.apple.com/widget.html?c=us&brc=FFFFFF&blc=FFFFFF&trc=FFFFFF&tlc=FFFFFF&d=this is fresh air with terry gross&t=fresh air&m=podcast&e=podcast&w=250&h=300&ids=214089682,1391379435&wt=playlist&partnerId=&affiliate_id=&at=&ct=" frameborder=0 style="overflow-x:hidden;overflow-y:hidden;width:250px;height: 300px;border:0px"></iframe>
 
 {% endblock %}

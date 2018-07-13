@@ -1,12 +1,18 @@
 from jinja2 import StrictUndefined
 import requests
+import base64
+import json
 
 from flask import (Flask, render_template, redirect, request, flash, session)
 from flask_debugtoolbar import DebugToolbarExtension
 
 from sqlalchemy import func
 from flask_sqlalchemy import SQLAlchemy
-from model import connect_to_db, db, User, Playlist, Track, TrackPlaylist,Friendship
+
+from model import (connect_to_db, db,
+				   User, Playlist, Track, TrackPlaylist, Friendship)
+
+from user_auth import auth, callback
 
 app = Flask(__name__)
 
@@ -16,14 +22,91 @@ app.secret_key = "MySecretKey"
 app.jinja_env.undefined = StrictUndefined
 
 
+CLIENT_ID = "5167b20260da450eb7020ffe201264c4"
+CLIENT_SECRET = "f0315bd7dd01466290b074d91f93d8f6"
+
+# Spotify URLS
+SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
+SPOTIFY_API_BASE_URL = "https://api.spotify.com"
+API_VERSION = "v1"
+SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
+
+
+# Server-side Parameters
+CLIENT_SIDE_URL = "http://0.0.0.0"
+PORT = 5000
+REDIRECT_URI = "http://localhost:5000/callback/q"
+SCOPE = "playlist-modify-public playlist-modify-private"
+STATE = ""
+SHOW_DIALOG_bool = True
+SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
+
+
+auth_query_parameters = {
+    "client_id": CLIENT_ID,
+    "response_type": "code",
+    "scope": SCOPE
+}
+
+
 @app.route("/")
-def index():
-	""" Load index page. """
+def auth():
+    # Auth Step 1: Authorization
+    # url_args = requests.get(REDIRECT_URI, params=auth_query_parameters)
+    url_args = 'response_type=code&client_id={}&scope={}&redirect_uri={}&show_dialog=true'.format(auth_query_parameters['client_id'],
+                                                                                auth_query_parameters['scope'],
+                                                                                REDIRECT_URI)
+    
+    auth_url = "{}/?{}".format(SPOTIFY_AUTH_URL, url_args)
+    return redirect(auth_url)
 
-	if session.get('username'):
-		return redirect('/<username>')
 
-	return render_template("homepage.html")
+@app.route("/callback/q")
+def callback():
+    # Auth Step 4: Requests refresh and access tokens
+    # auth_token = request.form.get(CLIENT_ID, CLIENT_SECRET)
+    SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
+
+    auth_token = request.args.get('code')
+    code_payload = {
+        "grant_type": "authorization_code",
+        "code": str(auth_token),
+        "redirect_uri": REDIRECT_URI,
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+    }
+
+    post_request = requests.post(SPOTIFY_TOKEN_URL, data=code_payload)
+
+    # Auth Step 5: Tokens are Returned to Application
+    response_data = json.loads(post_request.text)
+    access_token = response_data["access_token"]
+    refresh_token = response_data["refresh_token"]
+    token_type = response_data["token_type"]
+    expires_in = response_data["expires_in"]
+
+    # Auth Step 6: Use the access token to access Spotify API
+    authorization_header = {"Authorization":"Bearer {}".format(access_token)}
+
+    # Get profile data
+    user_profile_api_endpoint = "{}/me".format(SPOTIFY_API_URL)
+    profile_response = requests.get(user_profile_api_endpoint, headers=authorization_header)
+    profile_data = json.loads(profile_response.text)
+
+    session['username'] = profile_data.get('display_name')
+    session['token'] = access_token
+
+    return redirect("/<username>")
+
+
+# @app.route("/home")
+# def index():
+# 	""" Load index page. """
+
+# 	if session.get('username'):
+# 		return redirect('/<username>')
+
+# 	return render_template("homepage.html")
 
 
 @app.route("/registration-form")
@@ -156,7 +239,8 @@ def search_podcasts():
 	payload = {
 		'term': search_terms,
 		'limit': 10,
-		'entity': 'podcast'
+		'entity': 'podcast',
+		'kind': 'podcast-episode'
 	}
 
 	response = requests.get('https://itunes.apple.com/search',
@@ -202,31 +286,23 @@ def search_podcasts():
 
 	# --------------------SPOTIFY REQUEST------------------------
 
-
-	# auth_payload = {'client_id': '5167b20260da450eb7020ffe201264c4',
-	# 				'response_type': 'code',
-	# 				'redirect_uri': 'https://localhost:5000/'
-	# 				}
-
-	# authorize = requests.get('https://accounts.spotify.com/authorize/',
-	# 						 params=auth_payload)
-
-	# resp_payload = {'grant_type': 'authorization_code',
-	# 				'code': }
-
 	# send_tokens = requests.post('https://accounts.spotify.com/api/token',
 	# 							params=resp_payload)
 
-	# payload = {
-	# 	'q': search_terms,
-	# 	'limit': 10,
-	# 	'type': 'track,artist,album'
-	# }
+	payload = {
+		'q': search_input,
+		'limit': 10,
+		'type': 'track,artist'
+	}
 
-	# response_sp = requests.get('https://api.spotify.com/v1/search',
-	# 						params=payload).json()
+	headers = {"Authorization":"Bearer {}".format(session['token'])}
 
-	return render_template("search_results.html", results=results)
+	response_sp = requests.get('https://api.spotify.com/v1/search',
+								params=payload, headers=headers).json()
+
+	response = response_sp['tracks']['items'][0]['album']
+
+	return render_template("search_results.html", sp_response=response, results=results)
 
 
 @app.route("/add-playlist", methods=['POST'])
@@ -257,11 +333,11 @@ def show_playlists(username):
 	pass
 
 
-@app.route("/<username>/<playlist_name>")
-def show_podcasts_playlist(username):
-	""" Show a list of all the podcasts in a particular playlist. """
+# @app.route("/<username>/<playlist_name>")
+# def show_podcasts_playlist(username, playlist_name):
+# 	""" Show a list of all the podcasts in a particular playlist. """
 
-	pass
+# 	pass
 
 
 @app.route("/<friend_username>")

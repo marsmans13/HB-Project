@@ -6,16 +6,25 @@
 <h3>Results</h3>
 
 {% if results %}
-
 {% for result in results %}
-{% if result['wrapperType'] == 'track' %}
-<h3> Title: <a href="{{ result['trackViewUrl'] }}">{{ result['trackName'] }}</a></h3>
-<p> Artist: {{ result['artistName'] }} </p>
-<p> Collection: {{ result['collectionName'] }} </p>
-<p> Kind: {{ result['kind'] }} </p>
-{% endif %}
+<!-- <p> {{result}} </p> -->
+<p>Artist:  {{ result['artistName'] }} </p>
+<h3>Collection:
+</h3><a href="{{ result['trackViewUrl'] }}">{{ result['collectionName'] }}</a>
+<br>
+<img src="{{ result['artworkUrl60'] }}" /> 
 {% endfor %}
+{% endif %}
 
+{% if sp_response %}
+
+<h3>Collection: </h3>
+<a href="{{ sp_response['external_urls']['spotify'] }}">
+	{{ sp_response['artists'][0]['name'] }}
+</a>
+<br>
+<img src="{{ sp_response['images'][2]['url'] }}" /> 
+<!-- <p>{{ sp_response }}</p> -->
 {% endif %}
 
 {% endblock %}
