@@ -46,7 +46,10 @@
 {% if friends %}
 <h3> Friends </h3>
 	{% for friend in friends %}
-		<p> {{ friend }} </p>
+	<form action="/friend" method="GET">
+		<input type="submit" name="friend-profile" value="Visit {{ friend.username }}'s page">
+		<input type="hidden" name="friend_id" value="{{ friend.user_id }}">
+	</form>
 	{% endfor %}
 {% endif %}
 

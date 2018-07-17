@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% if friend %}
+
+<h2> {{ friend.username }} </h2>
+
+
+	<h3> Playlists </h3>
+	{% if playlists %}
+
+		{% for playlist in playlists %}
+		<p> {{ playlist.title }} </p>
+
+			{% if playlist.tracks %}
+			<ul>
+				{% for track in playlist.tracks %}
+				<li> {{ track.title }} <br>
+					<audio controls src="{{ track.audio }}">Your browser doesn't support the audio element.</audio>
+				</li>
+				{% endfor %}
+			</ul>
+			{% endif %}
+
+		{% endfor %}
+
+	{% else %}
+		<p> No playlists </p>
+	{% endif %}
+
+{% endif %}
+
+{% endblock %}

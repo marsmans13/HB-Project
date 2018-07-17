@@ -8,6 +8,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from sqlalchemy import func
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import joinedload
 
 from model import (connect_to_db, db,
 				   User, Playlist, Track, TrackPlaylist, Friendship)
@@ -26,16 +27,6 @@ def show_login():
 	""" Show login page. """
 
 	return render_template("homepage.html")
-
-
-# @app.route("/home")
-# def index():
-#   """ Load index page. """
-
-#   if session.get('username'):
-#       return redirect('/user')
-
-#   return render_template("homepage.html")
 
 
 @app.route("/login", methods=['POST'])
@@ -99,8 +90,6 @@ def do_registration():
 	session['username'] = username
 	flash("Logged in.")
 
-	# set_val_user_id()
-
 	user = User(email=email, username=username, password=password,
 				fname=fname, lname=lname)
 
@@ -159,11 +148,14 @@ def show_profile(username='user'):
 	playlists = []
 	friends = []
 
-	# user_join = db.session.query(User).options(joinedload(User.friends)).filter_by(username=username).all()
-
 	# print(user_join)
 
 	user = User.query.filter_by(username=username).first()
+
+	user_join = db.session.query(User).options(joinedload(User.friends)).all()
+
+	# user_join = db.session.query(User).options(joinedload(User.friends)).filter_by(user_one_id=current_user).all()
+
 	if user:
 		user_id = user.user_id
 		friend_objects = user.friends
@@ -175,7 +167,12 @@ def show_profile(username='user'):
 
 		for friend in friend_objects:
 			friend_ids.append(friend.user_two_id)
-		print(friend_ids)
+
+		friends = []
+
+		for f_id in friend_ids:
+			friend = User.query.filter_by(user_id=f_id).first()
+			friends.append(friend)
 
 	if show_playlists():
 		playlists = show_playlists()
@@ -183,7 +180,7 @@ def show_profile(username='user'):
 	return render_template("user_profile.html",
 							username=username,
 							playlists=playlists,
-							friends=friend_ids)
+							friends=friends)
 
 
 @app.route("/search")
@@ -370,7 +367,6 @@ def add_friend():
 	friend_username = request.form.get("username")
 
 	friend = User.query.filter_by(username=friend_username).first()
-	print(friend)
 
 	user_username = session.get('username')
 
@@ -396,7 +392,20 @@ def add_friend():
 def show_friend_profile():
 	""" Show profile/playlists of a profile the user is following. """
 
-	pass
+	friend_id = request.args.get("friend_id")
+
+	friend = User.query.filter_by(user_id=friend_id).first()
+
+	playlists = []
+
+	if friend.playlists:
+		playlists = friend.playlists
+
+	if friend:
+		return render_template("friend_profile.html", friend=friend, playlists=playlists)
+	else:
+		flash("Page not available.")
+		return redirect("/")
 
 
 @app.route("/user-info")
@@ -404,32 +413,6 @@ def show_user_info():
 	""" Show user's info. """
 
 	pass
-
-
-# def set_val_user_id():
-#     """Set value for the next user_id after seeding database"""
-
-#     # Get the Max user_id in the database
-#     result = db.session.query(func.max(User.user_id)).one()
-#     max_id = int(result[0])
-
-#     # Set the value for the next user_id to be max_id + 1
-#     query = "SELECT setval('users_user_id_seq', :new_id)"
-#     db.session.execute(query, {'new_id': max_id + 1})
-#     db.session.commit()
-
-
-# def set_val_playlist_id():
-#     """Set value for the next user_id after seeding database"""
-
-#     # Get the Max user_id in the database
-#     result = db.session.query(func.max(Playlist.playlist_id)).one()
-#     max_id = int(result[0])
-
-#     # Set the value for the next user_id to be max_id + 1
-#     query = "SELECT setval('playlists_playlist_id_seq', :new_id)"
-#     db.session.execute(query, {'new_id': max_id + 1})
-#     db.session.commit()
 
 
 if __name__ == "__main__":
