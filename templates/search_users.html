@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2> Website Name </h2>
+
+<h3>Results</h3>
+
+{% for user in users %}
+<form action="/add-friend" method="POST">
+<p> {{ user.username }} <input type="submit" name="add-friend" value="Add friend">
+	<input type="hidden" name="username" value="{{ user.username }}">
+</p>
+<br>
+</form>
+{% endfor %}
+
+{% endblock %}

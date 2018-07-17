@@ -3,18 +3,14 @@
 
 <h2> Website Name </h2>
 
-<h3> Login </h3>
+<h3> Sign In </h3>
 
 <form action = "/login" method="post">
-	Username: <input type="text" name="username">
-	Password: <input type="password" name="password">
+	Username: <input type="text" name="username" required>
+	Password: <input type="password" name="password" required>
     <input type='submit' value="Log In">
 </form>
 
-<a href="/registration-form">Register</a>
-
-{% if data %}
-<p> {{ data }} </p>
-{% endif %}
+<a href="/registration">Register</a>
 
 {% endblock %}

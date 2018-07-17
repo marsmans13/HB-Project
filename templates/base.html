@@ -2,16 +2,18 @@
 <html>
 <head>
     <title>Podcasts</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+    </script>
 </head>
 <body>
 
 	{% with messages = get_flashed_messages() %}
 	{% if messages %}
-	<ul>
-		{% for message in messages %}
-		<li> {{ message }} </li>
-		{% endfor %}
-	</ul>
+
+	{% for message in messages %}
+	<p> {{ message }} </p>
+	{% endfor %}
+
 	{% endif %}
 	{% endwith %}
 
@@ -42,9 +44,6 @@
 	<input type='submit' value="Log Out">
 	</form> -->
 
-	<br>
-    Podcasts
-    <hr>
     {% block content %} put your content here {% endblock %}
 
 </body>

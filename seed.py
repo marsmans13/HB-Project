@@ -10,20 +10,6 @@ def load_users():
 
 	User.query.delete()
 
-	# u1 = User(username='HenryPaw', email='henry@gmail.com', password='123',
-	# 		  fname='Henry', lname='Marsman')
-	# u2 = User(username='MilThePill', email='millie@gmail.com', password='456',
-	# 		  fname='Millie', lname='Louise')
-	# u3 = User(username='BobRoss', email='bob@gmail.com', password='littletrees',
-	# 		  fname='Bob', lname='Ross')
-	# u4 = User(username='NaiveGuy', email='naive@gmail.com', password='password',
-	# 		  fname='Dr.', lname='Bayes')
-
-	# users = [u1, u2, u3, u4]
-
-	# for user in users:
-	# 	db.session.add(user)
-
 	for row in open("seed_data/user_data.csv"):
 		row = row.rstrip()
 		user_id, username, email, password, fname, lname = row.split(",")
@@ -42,16 +28,6 @@ def load_playlists():
 
 	Playlist.query.delete()
 
-	# p1 = Playlist(user_id=1, title='adventure')
-	# p2 = Playlist(user_id=2, title='stuff to know')
-	# p3 = Playlist(user_id=3, title='arts')
-	# p4 = Playlist(user_id=4, title='science')
-
-	# playlists = [p1, p2, p3, p4]
-
-	# for playlist in playlists:
-	# 	db.session.add(playlist)
-
 	for row in open("seed_data/playlist_data.csv"):
 		row = row.rstrip()
 		playlist_id, user_id, title = row.split(",")
@@ -64,65 +40,42 @@ def load_playlists():
 	db.session.commit()
 
 
-def load_tracks():
+# def load_tracks():
 
-	print("Loading tracks")
+# 	print("Loading tracks")
 
-	Track.query.delete()
+# 	Track.query.delete()
 
-	# t1 = Track(artist='pups', title='into the woods')
-	# t2 = Track(artist='sysk', title='pyramids')
-	# t3 = Track(artist='bob ross', title='mountains')
-	# t4 = Track(artist='bill nye', title='naive bayes')
+# 	for row in open("seed_data/track_data.csv"):
+# 		row = row.rstrip()
+# 		track_id, artist, title = row.split(",")
 
-	# tracks = [t1, t2, t3, t4]
+# 		track = Track(track_id=track_id,
+# 					  artist=artist,
+# 					  title=title)
 
-	# for track in tracks:
-	# 	db.session.add(track)
+# 		db.session.add(track)
 
-	for row in open("seed_data/track_data.csv"):
-		row = row.rstrip()
-		track_id, artist, title = row.split(",")
-
-		track = Track(track_id=track_id,
-					  artist=artist,
-					  title=title)
-
-		db.session.add(track)
-
-	db.session.commit()
+# 	db.session.commit()
 
 
-def load_track_playlists():
+# def load_track_playlists():
 
-	print("Loading track-playlists")
+# 	print("Loading track-playlists")
 
-	TrackPlaylist.query.delete()
+# 	TrackPlaylist.query.delete()
 
-	# tp1 = TrackPlaylist(track_id=1, playlist_id=1)
-	# tp2 = TrackPlaylist(track_id=2, playlist_id=2)
-	# tp3 = TrackPlaylist(track_id=2, playlist_id=3)
-	# tp4 = TrackPlaylist(track_id=1, playlist_id=3)
-	# tp5 = TrackPlaylist(track_id=3, playlist_id=4)
+# 	for row in open("seed_data/playlist_track_data.csv"):
+# 		row = row.rstrip()
+# 		tp_id, track_id, playlist_id = row.split(",")
 
-	# tps = [tp1, tp2, tp3, tp4, tp5]
+# 		tp = TrackPlaylist(tp_id=tp_id,
+# 					  	   playlist_id=playlist_id,
+# 					  	   track_id=track_id)
 
-	# for tp in tps:
-	# 	db.session.add(tp)
+# 		db.session.add(tp)
 
-	# db.session.commit()
-
-	for row in open("seed_data/playlist_track_data.csv"):
-		row = row.rstrip()
-		tp_id, track_id, playlist_id = row.split(",")
-
-		tp = TrackPlaylist(tp_id=tp_id,
-					  	   playlist_id=playlist_id,
-					  	   track_id=track_id)
-
-		db.session.add(tp)
-
-	db.session.commit()
+# 	db.session.commit()
 
 
 def load_friendships():
@@ -158,6 +111,45 @@ def set_val_user_id():
     db.session.execute(query, {'new_id': max_id + 1})
     db.session.commit()
 
+
+def set_val_playlist_id():
+    """Set value for the next user_id after seeding database"""
+
+    # Get the Max user_id in the database
+    result = db.session.query(func.max(Playlist.playlist_id)).one()
+    max_id = int(result[0])
+
+    # Set the value for the next user_id to be max_id + 1
+    query = "SELECT setval('playlists_playlist_id_seq', :new_id)"
+    db.session.execute(query, {'new_id': max_id + 1})
+    db.session.commit()
+
+
+# def set_val_track_id():
+#     """Set value for the next track_id after seeding database"""
+
+#     # Get the Max user_id in the database
+#     result = db.session.query(func.max(Track.track_id)).one()
+#     max_id = int(result[0])
+
+#     # Set the value for the next user_id to be max_id + 1
+#     query = "SELECT setval('tracks_track_id_seq', :new_id)"
+#     db.session.execute(query, {'new_id': max_id + 1})
+#     db.session.commit()
+
+
+# def set_val_track_playlist_id():
+#     """Set value for the next track_id after seeding database"""
+
+#     # Get the Max user_id in the database
+#     result = db.session.query(func.max(TrackPlaylist.tp_id)).one()
+#     max_id = int(result[0])
+
+#     # Set the value for the next user_id to be max_id + 1
+#     query = "SELECT setval('track_playlist_tp_id_seq', :new_id)"
+#     db.session.execute(query, {'new_id': max_id + 1})
+#     db.session.commit()
+
 # create set_val for playlist, track, friendship
 
 
@@ -170,10 +162,12 @@ if __name__ == "__main__":
     # Import different types of data
     load_users()
     load_playlists()
-    load_tracks()
-    load_track_playlists()
+    # load_tracks()
+    # load_track_playlists()
     # load_friendships()
 
     set_val_user_id()
-
+    set_val_playlist_id()
+    # set_val_track_id()
+    # set_val_track_playlist_id()
 

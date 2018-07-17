@@ -15,6 +15,8 @@ class User(db.Model):
 	fname = db.Column(db.String(50), nullable=False)
 	lname = db.Column(db.String(50), nullable=False)
 
+	friends = db.relationship('Friendship',
+							  primaryjoin="(User.user_id==Friendship.user_one_id)")
 
 	def __repr__(self):
 
@@ -47,7 +49,6 @@ class Playlist(db.Model):
 							 secondary='track_playlist',
 							 backref=db.backref('playlists'))
 
-
 	def __repr__(self):
 
 		s = """
@@ -68,6 +69,7 @@ class Track(db.Model):
 	track_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
 	artist = db.Column(db.String(50))
 	title = db.Column(db.String(50), nullable=False)
+	audio = db.Column(db.String(200), nullable=False)
 
 
 	def __repr__(self):
@@ -76,8 +78,9 @@ class Track(db.Model):
 		<Track:
 		track_id = {}
 		artist = {}
-		title = {}>
-		""".format(self.track_id, self.artist, self.title)
+		title = {}
+		audio = {}>
+		""".format(self.track_id, self.artist, self.title, self.audio)
 
 		return s
 
@@ -94,7 +97,6 @@ class TrackPlaylist(db.Model):
 	track_id = db.Column(db.Integer,
 						 db.ForeignKey('tracks.track_id'),
 						 nullable=False)
-
 
 
 class Friendship(db.Model):

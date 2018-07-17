@@ -1,9 +1,9 @@
 from jinja2 import StrictUndefined
 import requests
-import base64
 import json
+import xml.etree.ElementTree
 
-from flask import (Flask, render_template, redirect, request, flash, session)
+from flask import (Flask, render_template, redirect, request, flash, session, jsonify)
 from flask_debugtoolbar import DebugToolbarExtension
 
 from sqlalchemy import func
@@ -12,7 +12,6 @@ from flask_sqlalchemy import SQLAlchemy
 from model import (connect_to_db, db,
 				   User, Playlist, Track, TrackPlaylist, Friendship)
 
-from user_auth import auth, callback
 
 app = Flask(__name__)
 
@@ -22,94 +21,65 @@ app.secret_key = "MySecretKey"
 app.jinja_env.undefined = StrictUndefined
 
 
-CLIENT_ID = "5167b20260da450eb7020ffe201264c4"
-CLIENT_SECRET = "f0315bd7dd01466290b074d91f93d8f6"
-
-# Spotify URLS
-SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
-SPOTIFY_API_BASE_URL = "https://api.spotify.com"
-API_VERSION = "v1"
-SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
-
-
-# Server-side Parameters
-CLIENT_SIDE_URL = "http://0.0.0.0"
-PORT = 5000
-REDIRECT_URI = "http://localhost:5000/callback/q"
-SCOPE = "playlist-modify-public playlist-modify-private"
-STATE = ""
-SHOW_DIALOG_bool = True
-SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
-
-
-auth_query_parameters = {
-    "client_id": CLIENT_ID,
-    "response_type": "code",
-    "scope": SCOPE
-}
-
-
 @app.route("/")
-def auth():
-    # Auth Step 1: Authorization
-    # url_args = requests.get(REDIRECT_URI, params=auth_query_parameters)
-    url_args = 'response_type=code&client_id={}&scope={}&redirect_uri={}&show_dialog=true'.format(auth_query_parameters['client_id'],
-                                                                                auth_query_parameters['scope'],
-                                                                                REDIRECT_URI)
-    
-    auth_url = "{}/?{}".format(SPOTIFY_AUTH_URL, url_args)
-    return redirect(auth_url)
+def show_login():
+	""" Show login page. """
 
-
-@app.route("/callback/q")
-def callback():
-    # Auth Step 4: Requests refresh and access tokens
-    # auth_token = request.form.get(CLIENT_ID, CLIENT_SECRET)
-    SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
-
-    auth_token = request.args.get('code')
-    code_payload = {
-        "grant_type": "authorization_code",
-        "code": str(auth_token),
-        "redirect_uri": REDIRECT_URI,
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
-    }
-
-    post_request = requests.post(SPOTIFY_TOKEN_URL, data=code_payload)
-
-    # Auth Step 5: Tokens are Returned to Application
-    response_data = json.loads(post_request.text)
-    access_token = response_data["access_token"]
-    refresh_token = response_data["refresh_token"]
-    token_type = response_data["token_type"]
-    expires_in = response_data["expires_in"]
-
-    # Auth Step 6: Use the access token to access Spotify API
-    authorization_header = {"Authorization":"Bearer {}".format(access_token)}
-
-    # Get profile data
-    user_profile_api_endpoint = "{}/me".format(SPOTIFY_API_URL)
-    profile_response = requests.get(user_profile_api_endpoint, headers=authorization_header)
-    profile_data = json.loads(profile_response.text)
-
-    session['username'] = profile_data.get('display_name')
-    session['token'] = access_token
-
-    return redirect("/<username>")
+	return render_template("homepage.html")
 
 
 # @app.route("/home")
 # def index():
-# 	""" Load index page. """
+#   """ Load index page. """
 
-# 	if session.get('username'):
-# 		return redirect('/<username>')
+#   if session.get('username'):
+#       return redirect('/user')
 
-# 	return render_template("homepage.html")
+#   return render_template("homepage.html")
 
 
-@app.route("/registration-form")
+@app.route("/login", methods=['POST'])
+def do_login():
+	""" Check login info and either perform login or flash error message. """
+
+	username = request.form.get('username')
+	password = request.form.get('password')
+
+	user = User.query.filter(User.username==username).first()
+
+	print(user)
+
+	if user:
+		if user.password == password:
+			session['username'] = username
+			flash("Logged in.")
+			return redirect("/user")
+		else:
+			flash("Password incorrect.")
+			return redirect("/")
+
+	else:
+		flash("Username not recognized.")
+		return redirect("/")
+
+
+	session['username'] = username
+
+	return redirect("/user")
+
+
+@app.route("/logout", methods=['POST'])
+def do_logout():
+	""" Log the user out. """
+
+	session.pop('username', None)
+	session.pop('password', None)
+	session.pop('token', None)
+
+	return redirect("/")
+
+
+@app.route("/registration")
 def show_registration():
 	""" Show registration form for new users. """
 
@@ -129,7 +99,7 @@ def do_registration():
 	session['username'] = username
 	flash("Logged in.")
 
-	set_val_user_id()
+	# set_val_user_id()
 
 	user = User(email=email, username=username, password=password,
 				fname=fname, lname=lname)
@@ -138,81 +108,82 @@ def do_registration():
 
 	db.session.commit()
 
-	return redirect("/<username>")
+	return redirect("/user")
 
 
-@app.route("/login")
-def show_login():
-	""" Show login page. """
+@app.route("/playlists")
+def show_playlists():
+	""" Show a list of all the user's playlists. """
 
-	pass
-
-
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-	""" Check login info and either perform login or flash error message. """
-
-	username = request.form.get('username')
-	password = request.form.get('password')
-
-	session['username'] = username
-	flash("Logged in.")
-
+	username = session['username']
 	user = User.query.filter_by(username=username).first()
-	print(user)
+	playlists = []
 
-	return redirect("/<username>")
+	if user:
+		user_id = user.user_id
+		playlists = Playlist.query.filter_by(user_id=user_id).all()
 
-	# if user:
-		# if user.password == password:
-		# 	session['username'] = username
-		# 	flash("Logged in.")
-        	# return redirect("/<username>")
-
-  #       else:
-  #       	flash("Password incorrect.")
-  		# print("check")
-
-    # else:
-    # 	flash("Username not recognized.")
+	return playlists
 
 
-# def user_in_db(username):
+@app.route("/playlists.json")
+def json_playlists():
+	""" Show a list of all the user's playlists. """
 
-#     if User.query.filter_by(username=username).one() is not False:
-#         return True
+	username = session['username']
+	user = User.query.filter_by(username=username).first()
+	playlists = []
 
-#     return False
-
-
-@app.route("/logout", methods=['POST'])
-def do_logout():
-	""" Log the user out. """
-
-	session.pop('username', None)
-	session.pop('password', None)
-	return redirect("/")
+	if user:
+		user_id = user.user_id
+		playlist_objects = Playlist.query.filter_by(user_id=user_id).all()
+	print(playlist_objects)
 
 
-@app.route("/<username>")
+	for obj in playlist_objects:
+		print(obj.title)
+		playlist = {}
+		playlist['title'] = obj.title
+		playists.append(playlist)
+
+	print(playlists)
+
+	return jsonify(playlists)
+
+
+@app.route("/user")
 def show_profile(username='user'):
 	""" Show user's profile page. """
 
 	username = session.get('username')
+	playlists = []
+	friends = []
 
-	# playlist title provided by user
-	playlist_title = 'how stuff works'
-	# playlist description provided by user
-	description = 'wordy description'
+	# user_join = db.session.query(User).options(joinedload(User.friends)).filter_by(username=username).all()
 
-	# track (podcast) id to be added to id list for url
-	track_id = '350359306'
+	# print(user_join)
+
+	user = User.query.filter_by(username=username).first()
+	if user:
+		user_id = user.user_id
+		friend_objects = user.friends
+		# returns friendship obj:
+		# <Friendship friendship_id="f_id" user_one_id="user_id" user_two_id="friend_id">
+
+		# friendship_objects = Friendship.query.filter_by(user_one_id=user_id).all()
+		friend_ids = []
+
+		for friend in friend_objects:
+			friend_ids.append(friend.user_two_id)
+		print(friend_ids)
+
+	if show_playlists():
+		playlists = show_playlists()
 
 	return render_template("user_profile.html",
 							username=username,
-							playlistTitle=playlist_title,
-							playlistDescription=description,
-							trackId=track_id)
+							playlists=playlists,
+							friends=friend_ids)
 
 
 @app.route("/search")
@@ -248,66 +219,69 @@ def search_podcasts():
 
 	results = response['results']
 
+	for result in results:
+		if (result.get('feedUrl')):
+			xml_url = result['feedUrl']
+			doc = requests.get(xml_url)
 
-	# ----------------SPOTIFY REQUEST WITH SPOTIPY--------------------
+			root = xml.etree.ElementTree.fromstring(doc.text)
 
-	# import spotipy
-	# import spotipy.util as util
+			root = root[0]
 
+			enclosures = []
+			titles = []
+			elems = []
 
-	# client_id = '5167b20260da450eb7020ffe201264c4'
-	# client_secret = 'f0315bd7dd01466290b074d91f93d8f6'
-	# redirect_uri = 'https://localhost:5000/search'
+			for item in root.findall('item'):
+				enclosures.extend(item.findall('enclosure'))
+				titles.extend(item.findall('title'))
 
-	# scope = 'user-library-read'
+			if (len(titles)==len(enclosures)):
+				for i in range(len(titles)):
+					elems.append((enclosures[i].attrib['url'], titles[i].text))
 
-	# username = '1291159305'
+			src_lst = []
 
-	# token = util.prompt_for_user_token(username, scope)
+			for enclosure in enclosures:
+				audio_src = enclosure.attrib['url']
 
-	# if token:
-	#     sp = spotipy.Spotify(auth=token)
-	#     results = sp.current_user_saved_tracks()
-	#     for item in results['items']:
-	#         track = item['track']
-	#         print track['name'] + ' - ' + track['artists'][0]['name']
-	# 	else:
-	#     	print "Can't get token for", username
+			# print(enclosures)
+			# print(titles)
+			# print(elems)
 
-
-	# name = 'fresh+air'
-
-	# results = spotify.search(q='artist:' + name, type='artist')
-	# items = results['artists']['items']
-	# if len(items) > 0:
-	#     artist = items[0]
-	#     print artist['name'], artist['images'][0]['url']
+			result['elements'] = elems
 
 
 	# --------------------SPOTIFY REQUEST------------------------
 
-	# send_tokens = requests.post('https://accounts.spotify.com/api/token',
-	# 							params=resp_payload)
 
-	payload = {
-		'q': search_input,
-		'limit': 20,
-		'type': 'track'
-	}
+	# sp_response = []
 
-	headers = {"Authorization":"Bearer {}".format(session['token'])}
+	# payload = {
+	# 	'q': search_input,
+	# 	'limit': 20,
+	# 	'type': 'track'
+	# }
 
-	sp_response = requests.get('https://api.spotify.com/v1/search',
-								params=payload, headers=headers).json()
+	# if session.get('token'):
+	# 	headers = {"Authorization":"Bearer {}".format(session['token'])}
 
-	raw = sp_response['tracks']
+	# 	sp_response = requests.get('https://api.spotify.com/v1/search',
+	# 								params=payload, headers=headers).json()
 
-	if sp_response.get('tracks'):
-		sp_response = sp_response['tracks']['items']
+	# 	if sp_response.get('tracks'):
+	# 		sp_response = sp_response['tracks']['items']
+	# 	else:
+	# 		sp_reponse = []
+
+	# print(sp_response)
+
+	if show_playlists():
+		playlists = show_playlists()
 	else:
-		sp_reponse = []
+		playlists = []
 
-	return render_template("search_results.html", sp_response=sp_response, results=results, raw=raw)
+	return render_template("search_results.html", results=results, playlists=playlists)
 
 
 @app.route("/add-playlist", methods=['POST'])
@@ -319,7 +293,7 @@ def add_new_playlist():
 
 	username = session.get('username')
 
-	set_val_playlist_id()
+	# set_val_playlist_id()
 
 	user = User.query.filter_by(username=username).first()
 	user_id = user.user_id
@@ -329,24 +303,97 @@ def add_new_playlist():
 	db.session.add(playlist)
 	db.session.commit()
 
-	return redirect("/<username>")
+	playlists = Playlist.query.filter_by(user_id=user_id).all()
 
-@app.route("/<username>/playlists")
-def show_playlists(username):
-	""" Show a list of all the user's playlists. """
+	session['playlists'] = [{'title': playlist.title, 'playlist_id': playlist.playlist_id} for playlist in playlists]
+	flash("Playlist added")
 
-	pass
+	return redirect("/user")
 
 
-# @app.route("/<username>/<playlist_name>")
+@app.route("/add-track", methods=['POST'])
+def add_track():
+	""" Add a track to the user's chosen playlist and creates track-playlist relationship. """
+
+	# When the user clicks a track to add to their playlist
+	# create a new track obj, and create the track_playlist relationship
+	# with the playlist they choose to add the track to
+
+	artist = request.form.get("artist")
+	title = request.form.get("title")
+	rss = request.form.get("rss")
+
+	playlist_title = request.form.get("playlist")
+
+	track = Track(artist=artist, title=title, audio=rss)
+	db.session.add(track)
+	db.session.commit()
+
+	new_track = Track.query.filter_by(audio=rss).first()
+	track_id = new_track.track_id
+
+	playlist = Playlist.query.filter_by(title=playlist_title).first()
+	playlist_id = playlist.playlist_id
+
+	track_playlist = TrackPlaylist(track_id=track_id, playlist_id=playlist_id)
+	db.session.add(track_playlist)
+	db.session.commit()
+
+	return redirect("/user")
+
+
+# @app.route("/user/<playlist_name>")
 # def show_podcasts_playlist(username, playlist_name):
-# 	""" Show a list of all the podcasts in a particular playlist. """
+#   """ Show a list of all the podcasts in a particular playlist. """
 
-# 	pass
+#   pass
+
+@app.route("/search-users")
+def search_users():
+	""" Search users in database by username. """
+
+	search_username = request.args.get("search-friends")
+
+	users = User.query.filter(User.username.like('%{}%'.format(search_username))).all()
+
+	if users:
+		return render_template("/search_users.html", users=users)
+
+	flash("No users with that username.")
+	return redirect("/user")
 
 
-@app.route("/<friend_username>")
-def show_friend_profile(friend_username):
+@app.route("/add-friend", methods=['POST'])
+def add_friend():
+	""" Add friend. """
+
+	friend_username = request.form.get("username")
+
+	friend = User.query.filter_by(username=friend_username).first()
+	print(friend)
+
+	user_username = session.get('username')
+
+	if user_username:
+		user_one = User.query.filter_by(username=user_username).first()
+		user_id = user_one.user_id
+	else:
+		flash("You must be logged in to view this page.")
+		return redirect("/")
+
+	if friend:
+		friend_id = friend.user_id
+		new_friend = Friendship(user_one_id=user_id, user_two_id=friend_id)
+		db.session.add(new_friend)
+		db.session.commit()
+		flash("Friend added.")
+	else:
+		flash("Friend not successfully added.")
+	return redirect("/user")
+
+
+@app.route("/friend")
+def show_friend_profile():
 	""" Show profile/playlists of a profile the user is following. """
 
 	pass
@@ -359,42 +406,42 @@ def show_user_info():
 	pass
 
 
-def set_val_user_id():
-    """Set value for the next user_id after seeding database"""
+# def set_val_user_id():
+#     """Set value for the next user_id after seeding database"""
 
-    # Get the Max user_id in the database
-    result = db.session.query(func.max(User.user_id)).one()
-    max_id = int(result[0])
+#     # Get the Max user_id in the database
+#     result = db.session.query(func.max(User.user_id)).one()
+#     max_id = int(result[0])
 
-    # Set the value for the next user_id to be max_id + 1
-    query = "SELECT setval('users_user_id_seq', :new_id)"
-    db.session.execute(query, {'new_id': max_id + 1})
-    db.session.commit()
+#     # Set the value for the next user_id to be max_id + 1
+#     query = "SELECT setval('users_user_id_seq', :new_id)"
+#     db.session.execute(query, {'new_id': max_id + 1})
+#     db.session.commit()
 
 
-def set_val_playlist_id():
-    """Set value for the next user_id after seeding database"""
+# def set_val_playlist_id():
+#     """Set value for the next user_id after seeding database"""
 
-    # Get the Max user_id in the database
-    result = db.session.query(func.max(Playlist.playlist_id)).one()
-    max_id = int(result[0])
+#     # Get the Max user_id in the database
+#     result = db.session.query(func.max(Playlist.playlist_id)).one()
+#     max_id = int(result[0])
 
-    # Set the value for the next user_id to be max_id + 1
-    query = "SELECT setval('playlists_playlist_id_seq', :new_id)"
-    db.session.execute(query, {'new_id': max_id + 1})
-    db.session.commit()
+#     # Set the value for the next user_id to be max_id + 1
+#     query = "SELECT setval('playlists_playlist_id_seq', :new_id)"
+#     db.session.execute(query, {'new_id': max_id + 1})
+#     db.session.commit()
 
 
 if __name__ == "__main__":
 	# set to true to use DebugToolbar
-    app.debug = True
-    # make sure templates, etc. are not cached in debug mode
-    app.jinja_env.auto_reload = app.debug
+	app.debug = True
+	# make sure templates, etc. are not cached in debug mode
+	app.jinja_env.auto_reload = app.debug
 
-    connect_to_db(app)
+	connect_to_db(app)
 
-    # Use the DebugToolbar
-    DebugToolbarExtension(app)
+	# Use the DebugToolbar
+	DebugToolbarExtension(app)
 
-    app.run(port=5000, host='0.0.0.0')
+	app.run(port=5000, host='0.0.0.0')
 
