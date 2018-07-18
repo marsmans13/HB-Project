@@ -2,6 +2,7 @@ from jinja2 import StrictUndefined
 import requests
 import json
 import xml.etree.ElementTree
+from mygpoclient import public
 
 from flask import (Flask, render_template, redirect, request, flash, session, jsonify)
 from flask_debugtoolbar import DebugToolbarExtension
@@ -38,8 +39,6 @@ def do_login():
 
 	user = User.query.filter(User.username==username).first()
 
-	print(user)
-
 	if user:
 		if user.password == password:
 			session['username'] = username
@@ -65,7 +64,6 @@ def do_logout():
 
 	session.pop('username', None)
 	session.pop('password', None)
-	session.pop('token', None)
 
 	return redirect("/")
 
@@ -242,15 +240,10 @@ def search_podcasts():
 			for enclosure in enclosures:
 				audio_src = enclosure.attrib['url']
 
-			# print(enclosures)
-			# print(titles)
-			# print(elems)
-
 			result['elements'] = elems
 
 
 	# --------------------SPOTIFY REQUEST------------------------
-
 
 	# sp_response = []
 
@@ -281,16 +274,30 @@ def search_podcasts():
 	return render_template("search_results.html", results=results, playlists=playlists)
 
 
+@app.route("/top-podcasts")
+def get_top_rated():
+	""" Returns a list of the 50 top podcasts and number of subscribers. """
+
+	client = public.PublicClient()
+
+	toplist_results = client.get_toplist()
+	top_podcasts = {}
+	for index, entry in enumerate(toplist_results):
+		# print("{} (subscribers: {})".format(entry.title, entry.subscribers))
+		top_podcasts[(index + 1)] = [entry.title, entry.mygpo_link]
+
+	return render_template("top_podcasts.html", top_podcasts=top_podcasts)
+
+
 @app.route("/add-playlist", methods=['POST'])
 def add_new_playlist():
 	""" Add a new playlist. """
+	
 	# pop-up that allows user to create new playlist with a name and description
 	title = request.form.get("playlist-name")
 	description = request.form.get("description")
 
 	username = session.get('username')
-
-	# set_val_playlist_id()
 
 	user = User.query.filter_by(username=username).first()
 	user_id = user.user_id
@@ -301,8 +308,6 @@ def add_new_playlist():
 	db.session.commit()
 
 	playlists = Playlist.query.filter_by(user_id=user_id).all()
-
-	session['playlists'] = [{'title': playlist.title, 'playlist_id': playlist.playlist_id} for playlist in playlists]
 	flash("Playlist added")
 
 	return redirect("/user")

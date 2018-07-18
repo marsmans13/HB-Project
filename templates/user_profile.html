@@ -3,12 +3,12 @@
 
 <h2> Hello, {{ session.get('username') }} </h2>
 
-<h3>Search Podcasts</h3>
+<!-- <h3>Search Podcasts</h3>
 
 <form action="/search-submit" method="GET">
 	<input type="search" name="q" id="search-form">
 <input type="submit" value="Submit">
-</form>
+</form> -->
 
 <h3>Search Users</h3>
 
@@ -19,8 +19,7 @@
 
 <h3> Add a new playlist </h3>
 <form action="/add-playlist" method='post'>
-	Playlist Name: <input type="text" name="playlist-name" required><br>
-	<input type='submit' value='New Playlist' id='new-playlist'>
+	Playlist Name: <input type="text" name="playlist-name" required> <input type='submit' value='Add playlist' id='new-playlist'>
 </form>
 
 {% if playlists %}
