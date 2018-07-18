@@ -6,40 +6,33 @@
 {% if results %}
 {% for result in results %}
 
-<!-- {% for r in result %}
-<p> {{ r }}: {{ result[r] }}</p>
-{% endfor %} -->
-
-<p>Artist:  {{ result['artistName'] }} </p>
-<h3>Collection:
-</h3><a href="{{ result['trackViewUrl'] }}">{{ result['collectionName'] }}</a>
-<br>
+<h3> {{ result['collectionName'] }} </h3>
 <img src="{{ result['artworkUrl60'] }}" /> 
-
+<br><br>
 
 {% if result.get('elements') %}
 {% for elem in result['elements'] %}
-<div>
-<p> <a href="{{ elem[0] }}"> {{ elem[1] }} </a> 
-	<form action="/add-track" method="POST">
+	<div>
+	<p> <a href="{{ elem[0] }}"> {{ elem[1] }} </a> 
+		<form action="/add-track" method="POST">
 
-		{% if playlists %}
-			<div>
-			{% for playlist in playlists %}
+			{% if playlists %}
+				<div>
+				{% for playlist in playlists %}
 
-			{{ playlist.title }}<input type="radio" name="playlist" value="{{ playlist.title }}">
+				{{ playlist.title }}<input type="radio" name="playlist" value="{{ playlist.title }}">
 
-			{% endfor %}
-			</div>
-		{% endif %}
+				{% endfor %}
+				</div>
+			{% endif %}
 
-		<input type="submit" id="add-track" value="Add to Playlist"><span id="playlist-popup"></span>
-		<input type="hidden" name="title" value="{{ elem[1] }}">
-		<input type="hidden" name="rss" value="{{ elem[0] }}">
-		<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
-</form>
-</p>
-</div>
+			<input type="submit" id="add-track" value="Add to Playlist"><span id="playlist-popup"></span>
+			<input type="hidden" name="title" value="{{ elem[1] }}">
+			<input type="hidden" name="rss" value="{{ elem[0] }}">
+			<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
+	</form>
+	</p>
+	</div>
 
 <!-- <p> Link: {{ elem[0] }} </p> -->
 {% endfor %}
@@ -63,6 +56,18 @@
 </script>
 
 {% endif %}
+
+
+{% if gpo_response %}
+{% for resp in gpo_response %}
+
+<h3> {{ resp.title }} </h3>
+<p> <a href="{{ resp.url }}"> View at gpodder.net </a> </p>
+<img src="{{ resp.logo_url }}" height="60px" width="60px" />
 <br>
+
+
+{% endfor %}
+{% endif %}
 
 {% endblock %}

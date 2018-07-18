@@ -10,18 +10,6 @@
 <input type="submit" value="Submit">
 </form> -->
 
-<h3>Search Users</h3>
-
-<form action="/search-users" method="GET">
-	<input type="search" name="search-friends" id="search-friends">
-<input type="submit" value="Submit">
-</form>
-
-<h3> Add a new playlist </h3>
-<form action="/add-playlist" method='post'>
-	Playlist Name: <input type="text" name="playlist-name" required> <input type='submit' value='Add playlist' id='new-playlist'>
-</form>
-
 {% if playlists %}
 <div>
 <h3> Playlists </h3>
@@ -34,6 +22,11 @@
 		<li> {{ track.title }} <br>
 			<audio controls src="{{ track.audio }}">Your browser doesn't support the audio element.</audio>
 		</li>
+			<!-- <iframe sandbox="allow-same-origin allow-scripts allow-top-navigation allow-popups" 
+			scrolling=no width="100%" height="185" frameborder="0" 
+			src="{{ track.audio }}">
+			</iframe> -->
+
 		{% endfor %}
 	</ul>
 	{% endif %}
@@ -41,6 +34,11 @@
 {% endfor %}
 </div>
 {% endif %}
+
+<h3> Add a new playlist </h3>
+<form action="/add-playlist" method='post'>
+	Playlist Name: <input type="text" name="playlist-name" required> <input type='submit' value='Add playlist' id='new-playlist'>
+</form>
 
 {% if friends %}
 <h3> Friends </h3>
@@ -51,6 +49,13 @@
 	</form>
 	{% endfor %}
 {% endif %}
+
+<h3>Search Users</h3>
+
+<form action="/search-users" method="GET">
+	<input type="search" name="search-friends" id="search-friends">
+<input type="submit" value="Submit">
+</form>
 
 
 <!-- <div name='playlist-popup' id='add-playlist'></div> -->

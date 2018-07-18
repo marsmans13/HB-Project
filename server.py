@@ -204,7 +204,7 @@ def search_podcasts():
 
 	payload = {
 		'term': search_terms,
-		'limit': 10,
+		'limit': 5,
 		'entity': 'podcast',
 		'kind': 'podcast-episode'
 	}
@@ -242,6 +242,13 @@ def search_podcasts():
 
 			result['elements'] = elems
 
+	collections = []
+
+	for result in results:
+		if result['collectionName'] not in collections:
+			collections.append(result['collectionName'])
+
+	print(collections)
 
 	# --------------------SPOTIFY REQUEST------------------------
 
@@ -266,12 +273,60 @@ def search_podcasts():
 
 	# print(sp_response)
 
+	# --------------------GPODDER REQUEST------------------------
+
+	client = public.PublicClient()
+
+	gpo_objects = client.search_podcasts(search_input)
+
+	gpo_response = []
+	titles = []
+
+	for obj in gpo_objects:
+		if obj.title not in collections and obj.title not in titles:
+			gpo_response.append(obj)
+			titles.append(obj.title)
+			print(obj.title)
+
 	if show_playlists():
 		playlists = show_playlists()
 	else:
 		playlists = []
 
-	return render_template("search_results.html", results=results, playlists=playlists)
+	# --------------------GPODDER TRACK REQUEST------------------------
+
+	# for resp in gpo_response:
+	# 	xml_url = resp.url
+	# 	if requests.get(xml_url):
+	# 		doc = requests.get(xml_url)
+
+	# 		root = xml.etree.ElementTree.fromstring(doc.text)
+
+	# 		root = root[0]
+
+	# 		enclosures = []
+	# 		titles = []
+	# 		elems = []
+
+	# 		for item in root.findall('item'):
+	# 			enclosures.extend(item.findall('enclosure'))
+	# 			titles.extend(item.findall('title'))
+
+	# 		if (len(titles)==len(enclosures)):
+	# 			for i in range(len(titles)):
+	# 				elems.append((enclosures[i].attrib['url'], titles[i].text))
+
+	# 		src_lst = []
+
+	# 		for enclosure in enclosures:
+	# 			audio_src = enclosure.attrib['url']
+
+	# 		gpo_xml['elements'] = elems
+
+	return render_template("search_results.html",
+							results=results,
+							gpo_response=gpo_response,
+							playlists=playlists)
 
 
 @app.route("/top-podcasts")
@@ -292,7 +347,7 @@ def get_top_rated():
 @app.route("/add-playlist", methods=['POST'])
 def add_new_playlist():
 	""" Add a new playlist. """
-	
+
 	# pop-up that allows user to create new playlist with a name and description
 	title = request.form.get("playlist-name")
 	description = request.form.get("description")
