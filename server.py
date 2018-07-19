@@ -27,6 +27,9 @@ app.jinja_env.undefined = StrictUndefined
 def show_login():
 	""" Show login page. """
 
+	if session.get("username"):
+		return redirect("/user")
+
 	return render_template("homepage.html")
 
 
@@ -51,11 +54,6 @@ def do_login():
 	else:
 		flash("Username not recognized.")
 		return redirect("/")
-
-
-	session['username'] = username
-
-	return redirect("/user")
 
 
 @app.route("/logout", methods=['POST'])
@@ -124,16 +122,11 @@ def json_playlists():
 	if user:
 		user_id = user.user_id
 		playlist_objects = Playlist.query.filter_by(user_id=user_id).all()
-	print(playlist_objects)
-
 
 	for obj in playlist_objects:
-		print(obj.title)
 		playlist = {}
 		playlist['title'] = obj.title
 		playists.append(playlist)
-
-	print(playlists)
 
 	return jsonify(playlists)
 
@@ -176,7 +169,7 @@ def show_profile(username='user'):
 		playlists = show_playlists()
 
 	return render_template("user_profile.html",
-							username=username,
+							user=user,
 							playlists=playlists,
 							friends=friends)
 
@@ -248,8 +241,6 @@ def search_podcasts():
 		if result['collectionName'] not in collections:
 			collections.append(result['collectionName'])
 
-	print(collections)
-
 	# --------------------SPOTIFY REQUEST------------------------
 
 	# sp_response = []
@@ -286,7 +277,6 @@ def search_podcasts():
 		if obj.title not in collections and obj.title not in titles:
 			gpo_response.append(obj)
 			titles.append(obj.title)
-			print(obj.title)
 
 	if show_playlists():
 		playlists = show_playlists()
@@ -379,25 +369,44 @@ def add_track():
 	artist = request.form.get("artist")
 	title = request.form.get("title")
 	rss = request.form.get("rss")
-
 	playlist_title = request.form.get("playlist")
 
 	track = Track(artist=artist, title=title, audio=rss)
 	db.session.add(track)
 	db.session.commit()
+	print(track)
 
 	new_track = Track.query.filter_by(audio=rss).first()
 	track_id = new_track.track_id
 
 	playlist = Playlist.query.filter_by(title=playlist_title).first()
 	playlist_id = playlist.playlist_id
+	print(playlist)
 
 	track_playlist = TrackPlaylist(track_id=track_id, playlist_id=playlist_id)
 	db.session.add(track_playlist)
 	db.session.commit()
+	print(track_playlist)
 
 	return redirect("/user")
 
+
+@app.route("/delete-track", methods=['POST'])
+def delete_track():
+	""" Allow users to delete a track from a playlist. """
+
+	track_id = request.form.get("track_id")
+
+	track = Track.query.filter_by(track_id=track_id).first()
+	track_playlist = TrackPlaylist.query.filter_by(track_id=track_id).first()
+
+	db.session.delete(track_playlist)
+	db.session.commit()
+
+	db.session.delete(track)
+	db.session.commit()
+
+	return redirect("/user")
 
 # @app.route("/user/<playlist_name>")
 # def show_podcasts_playlist(username, playlist_name):

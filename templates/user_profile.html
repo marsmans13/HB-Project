@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2> Hello, {{ session.get('username') }} </h2>
+<h2> Hello, {{ user.fname }} </h2>
 
 <!-- <h3>Search Podcasts</h3>
 
@@ -10,25 +10,43 @@
 <input type="submit" value="Submit">
 </form> -->
 
+<script>
+
+$(document).ready(function() {
+	$("[id*=show-tracks]").hide();
+	$("[id*=playlist]").click(function() {
+		$("[id*=show-tracks]").toggle();
+	});
+});
+
+</script>
+
 {% if playlists %}
 <div>
 <h3> Playlists </h3>
 {% for playlist in playlists %}
-<p> {{ playlist.title }} </p>
+<p> {{ playlist.title }}<button id="playlist{{ playlist.playlist_id}}">+</button></p> 
 
 	{% if playlist.tracks %}
+	<div id="show-tracks{{ playlist.playlist_id }}">
 	<ul>
 		{% for track in playlist.tracks %}
+		
 		<li> {{ track.title }} <br>
 			<audio controls src="{{ track.audio }}">Your browser doesn't support the audio element.</audio>
 		</li>
+		<form action="/delete-track" method="POST">
+			<input type="submit" value="Delete"  id="delete-track">
+			<input type="hidden" name="track_id" value="{{ track.track_id }}">
+		</form>
 			<!-- <iframe sandbox="allow-same-origin allow-scripts allow-top-navigation allow-popups" 
 			scrolling=no width="100%" height="185" frameborder="0" 
 			src="{{ track.audio }}">
 			</iframe> -->
-
+		
 		{% endfor %}
 	</ul>
+	</div>
 	{% endif %}
 
 {% endfor %}
@@ -57,6 +75,17 @@
 <input type="submit" value="Submit">
 </form>
 
+
+<script>
+
+	let delBtn = $("#delete-track");
+
+	delBtn.on('click', function (evt) {
+		evt.preventDefault()
+		alert("Delete track");
+	});
+
+</script>
 
 <!-- <div name='playlist-popup' id='add-playlist'></div> -->
 

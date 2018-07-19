@@ -5,39 +5,39 @@
 
 {% if results %}
 {% for result in results %}
+<form action="/add-track" method="POST">
+	{% if result.get('elements') %}
 
-<h3> {{ result['collectionName'] }} </h3>
-<img src="{{ result['artworkUrl60'] }}" /> 
-<br><br>
+	<h3> {{ result['collectionName'] }} </h3>
+	<img src="{{ result['artworkUrl60'] }}" /> 
+	<br><br>
 
-{% if result.get('elements') %}
-{% for elem in result['elements'] %}
-	<div>
-	<p> <a href="{{ elem[0] }}"> {{ elem[1] }} </a> 
-		<form action="/add-track" method="POST">
+	{% if playlists %}	
+		{% for playlist in playlists %}
 
-			{% if playlists %}
-				<div>
-				{% for playlist in playlists %}
+		<div id="playlists-toggle{{ playlist.playlist_id }}">
 
-				{{ playlist.title }}<input type="radio" name="playlist" value="{{ playlist.title }}">
+		<input type="radio" name="playlist" value="{{ playlist.title }}" required>{{ playlist.title }}
+		<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
 
-				{% endfor %}
-				</div>
-			{% endif %}
+		{% endfor %}
+		
+		</div>
+	{% endif %}
+		
+	{% for elem in result['elements'] %}
 
-			<input type="submit" id="add-track" value="Add to Playlist"><span id="playlist-popup"></span>
-			<input type="hidden" name="title" value="{{ elem[1] }}">
-			<input type="hidden" name="rss" value="{{ elem[0] }}">
-			<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
-	</form>
-	</p>
-	</div>
+		<div>
+		<p><a href="{{ elem[0] }}"> {{ elem[1] }} </a><input type="submit" value="Add">
+		<input type="hidden" name="title" value="{{ elem[1] }}">
+		<input type="hidden" name="rss" value="{{ elem[0] }}">
+		</p>
+		</div>
 
-<!-- <p> Link: {{ elem[0] }} </p> -->
-{% endfor %}
-{% endif %}
+	{% endfor %}
 
+	{% endif %}
+</form>
 {% endfor %}
 
 <script>
@@ -48,10 +48,18 @@
 
 	function showPlaylists(results) {
 		let playlists = results;
-		$("#playlist-popup").html(playlists)
+		$("#playlist-popup").html(playlists);
 	}
 
 	$("#add-track").on('click', getPlaylists);
+
+	// $(document).ready(function () {
+	// 	$("[id*=playlists-toggle]").hide()
+	// 	$("[id*=show-playlists]").click(function(evt) {
+	// 		evt.preventDefault();
+	// 		$("[id*=playlists-toggle]").toggle();
+	// 	});
+	// });
 
 </script>
 
