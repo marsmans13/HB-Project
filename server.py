@@ -136,6 +136,10 @@ def show_profile(username='user'):
 	""" Show user's profile page. """
 
 	username = session.get('username')
+	if not username:
+		flash("You are not logged in")
+		return redirect("/")
+
 	playlists = []
 	friends = []
 
