@@ -1,79 +1,74 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="container-fluid">
 
-<h2> Hello, {{ user.fname }} </h2>
-
-<!-- <h3>Search Podcasts</h3>
-
-<form action="/search-submit" method="GET">
-	<input type="search" name="q" id="search-form">
-<input type="submit" value="Submit">
-</form> -->
+<h2 class="title"> Hello, {{ user.fname }} </h2>
 
 <script>
 
-$(document).ready(function() {
+$(document).ready(function () {
 	$("[id*=show-tracks]").hide();
-	$("[id*=playlist]").click(function() {
-		$("[id*=show-tracks]").toggle();
+	$("button").on('click', function() {
+		let id = $(this).attr("id");
+		let thisDiv = "#show-tracks" + id;
+		$(thisDiv).toggle();
 	});
 });
 
 </script>
 
-{% if playlists %}
-<div>
-<h3> Playlists </h3>
-{% for playlist in playlists %}
-<p> {{ playlist.title }}<button id="playlist{{ playlist.playlist_id}}" style="margin: 5px"> + </button></p> 
 
-	{% if playlist.tracks %}
-	<div id="show-tracks{{ playlist.playlist_id }}">
-	<ul>
-		{% for track in playlist.tracks %}
-		
-		<li> {{ track.title }} <br>
-			<audio controls src="{{ track.audio }}">Your browser doesn't support the audio element.</audio>
-		</li>
-		<form action="/delete-track" method="POST">
-			<input type="submit" value="Delete"  id="delete-track">
-			<input type="hidden" name="track_id" value="{{ track.track_id }}">
-		</form>
-			<!-- <iframe sandbox="allow-same-origin allow-scripts allow-top-navigation allow-popups" 
-			scrolling=no width="100%" height="185" frameborder="0" 
-			src="{{ track.audio }}">
-			</iframe> -->
-		
-		{% endfor %}
-	</ul>
+	<div id="playlist-parent">
+	{% if playlists %}
+
+	<h3 class="title"> Playlists </h3>
+	{% for playlist in playlists %}
+	<p style="font-size:18px"> <button class="btn-color" id="{{ playlist.playlist_id }}" class="btn" style="margin: 5px"> + </button> {{ playlist.title }}</p> 
+
+		{% if playlist.tracks %}
+		<div class="list-group" id="show-tracks{{ playlist.playlist_id }}">
+		<ul>
+			{% for track in playlist.tracks %}
+			<div class="list-group-item">
+			<h4 class="list-group-item-heading"> {{ track.artist }}: {{ track.title }} </h4>
+			<p class="list-group-item-text"><audio controls src="{{ track.audio }}">Your browser doesn't support the audio element.</audio>
+			</p>
+			<form action="/delete-track" method="POST">
+				<input type="submit" value="Delete"  id="delete-track">
+				<input type="hidden" name="track_id" value="{{ track.track_id }}">
+			</form>
+		</div>
+			
+			{% endfor %}
+		</ul>
+		</div>
+		{% endif %}
+
+	{% endfor %}
+
+	{% endif %}
 	</div>
+
+	<form action="/add-playlist" method='post'>
+		<input type="text" name="playlist-name" placeholder="Playlist name" required> <input type='submit' class="btn btn-color" value='Add playlist' id='new-playlist'>
+	</form>
+
+	{% if friends %}
+	<h3 class="title"> Friends </h3>
+		{% for friend in friends %}
+		<form action="/friend" method="GET">
+			<input type="submit" class="btn" name="friend-profile" value="Visit {{ friend.username }}'s page">
+			<input type="hidden" name="friend_id" value="{{ friend.user_id }}">
+		</form>
+		{% endfor %}
 	{% endif %}
 
-{% endfor %}
-</div>
-{% endif %}
-
-<form action="/add-playlist" method='post'>
-	Playlist Name: <input type="text" name="playlist-name" required> <input type='submit' value='Add playlist' id='new-playlist'>
-</form>
-
-{% if friends %}
-<h3> Friends </h3>
-	{% for friend in friends %}
-	<form action="/friend" method="GET">
-		<input type="submit" name="friend-profile" value="Visit {{ friend.username }}'s page">
-		<input type="hidden" name="friend_id" value="{{ friend.user_id }}">
+	<form action="/search-users" method="GET">
+		<input type="search" name="search-friends" placeholder="Search users" id="search-friends">
+	<input type="submit" class="btn btn-color" value="Submit">
 	</form>
-	{% endfor %}
-{% endif %}
 
-<h3>Search Users</h3>
-
-<form action="/search-users" method="GET">
-	<input type="search" name="search-friends" id="search-friends">
-<input type="submit" value="Submit">
-</form>
-
+</div>
 
 <script>
 
@@ -85,8 +80,5 @@ $(document).ready(function() {
 	});
 
 </script>
-
-<!-- <div name='playlist-popup' id='add-playlist'></div> -->
-
 
 {% endblock %}

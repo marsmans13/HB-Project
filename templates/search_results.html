@@ -1,43 +1,45 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="container-fluid">
 
-<h2>Results</h2>
+<h2 class="title">Results</h2>
 
 {% if results %}
 {% for result in results %}
-<form action="/add-track" method="POST">
 	{% if result.get('elements') %}
 
-	<h3> {{ result['collectionName'] }} </h3>
+	<h3 class="title"> {{ result['collectionName'] }} </h3>
 	<img src="{{ result['artworkUrl60'] }}" /> 
 	<br><br>
 
-	{% if playlists %}	
-		{% for playlist in playlists %}
+		{% for elem in result['elements'] %}
+		
+		<form action="add-track" method="POST">
 
-		<div id="playlists-toggle{{ playlist.playlist_id }}">
+			<div>
+				{{ elem[1] }}
+				<input type="hidden" name="title" value="{{ elem[1] }}">
+				<input type="hidden" name="rss" value="{{ elem[0] }}">
+			</div>
 
-		<input type="radio" name="playlist" value="{{ playlist.title }}" required>{{ playlist.title }}
-		<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
+			{% if playlists %}	
+				{% for playlist in playlists %}
+
+					<div id="playlist{{ elem[1] }}">
+						<input type="radio" name="playlist" value="{{ playlist.title }}" required>{{ playlist.title }}
+						<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
+
+				{% endfor %}
+				<input type="submit" value="+">
+			</div>
+				
+			{% endif %}
+		</form>
 
 		{% endfor %}
-		
-		</div>
-	{% endif %}
-		
-	{% for elem in result['elements'] %}
-
-		<div>
-		<p><a href="{{ elem[0] }}"> {{ elem[1] }} </a><input type="submit" value="Add">
-		<input type="hidden" name="title" value="{{ elem[1] }}">
-		<input type="hidden" name="rss" value="{{ elem[0] }}">
-		</p>
-		</div>
-
-	{% endfor %}
 
 	{% endif %}
-</form>
+
 {% endfor %}
 
 <script>
@@ -54,28 +56,18 @@
 	$("#add-track").on('click', getPlaylists);
 
 	// $(document).ready(function () {
-	// 	$("[id*=playlists-toggle]").hide()
-	// 	$("[id*=show-playlists]").click(function(evt) {
-	// 		evt.preventDefault();
-	// 		$("[id*=playlists-toggle]").toggle();
+	// 	$("[id*=playlist]").hide();
+	// 	$("button").on('click', function() {
+	// 		let id = $(this).attr("id");
+	// 		let thisDiv = "#playlist" + id;
+	// 		$(thisDiv).toggle();
 	// 	});
 	// });
 
 </script>
 
 {% endif %}
+<br><br>
 
-
-{% if gpo_response %}
-{% for resp in gpo_response %}
-
-<h3> {{ resp.title }} </h3>
-<p> <a href="{{ resp.url }}"> View at gpodder.net </a> </p>
-<img src="{{ resp.logo_url }}" height="60px" width="60px" />
-<br>
-
-
-{% endfor %}
-{% endif %}
-
+</div>
 {% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Results</h2>
+
+{% if results %}
+{% for result in results %}
+	{% if result.get('elements') %}
+
+	<h3> {{ result['collectionName'] }} </h3>
+	<img src="{{ result['artworkUrl60'] }}" /> 
+	<br><br>
+	<form action="/add-track" method="POST">
+	{% if playlists %}	
+		{% for playlist in playlists %}
+
+		<div id="{{ playlist.playlist_id }}">
+
+			<input type="radio" name="playlist" value="{{ playlist.title }}" required>{{ playlist.title }}
+			<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
+			
+		</div>
+
+		{% endfor %}
+		
+	{% endif %}
+		
+	{% for elem in result['elements'] %}
+
+		<div>
+			<a href="{{ elem[0] }}"> {{ elem[1] }} </a> <input type="submit" value="Add">
+			<input type="hidden" name="title" value="{{ elem[1] }}">
+			<input type="hidden" name="rss" value="{{ elem[0] }}">
+		</div>
+
+	{% endfor %}
+	</form>
+	{% endif %}
+
+{% endfor %}
+
+<script>
+	
+	function getPlaylists() {
+		$.get("/playlists.json", showPlaylists);
+	}
+
+	function showPlaylists(results) {
+		let playlists = results;
+		$("#playlist-popup").html(playlists);
+	}
+
+	$("#add-track").on('click', getPlaylists);
+
+	$(document).ready(function () {
+		$("[id*=show-tracks]").hide();
+		$("button").on('click', function() {
+			let id = $(this).attr("id");
+			let thisDiv = "#show-tracks" + id;
+			$(thisDiv).toggle();
+		});
+	});
+
+</script>
+
+{% endif %}
+<br><br>
+
+
+{% if gpo_response %}
+
+<h2>Gpodder Results</h2>
+
+{% for resp in gpo_response %}
+
+<h3> {{ resp.title }} </h3>
+<p> <a href="{{ resp.mygpo_link }}"> View at gpodder.net </a> </p>
+<img src="{{ resp.logo_url }}" height="60px" width="60px" />
+<br>
+
+{% endfor %}
+{% endif %}
+
+{% endblock %}

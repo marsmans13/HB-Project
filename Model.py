@@ -11,7 +11,7 @@ class User(db.Model):
 	user_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
 	username = db.Column(db.String(50), unique=True, nullable=False)
 	email = db.Column(db.String(100), unique=True, nullable=False)
-	password = db.Column(db.String(100), nullable=False)
+	password = db.Column(db.String(50), nullable=False)
 	fname = db.Column(db.String(50), nullable=False)
 	lname = db.Column(db.String(50), nullable=False)
 
@@ -40,7 +40,7 @@ class Playlist(db.Model):
 
 	playlist_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
 	user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
-	title = db.Column(db.String(70))
+	title = db.Column(db.String(100))
 
 	user = db.relationship('User',
 							backref=db.backref('playlists'))
@@ -67,9 +67,9 @@ class Track(db.Model):
 	__tablename__ = "tracks"
 
 	track_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-	artist = db.Column(db.String(50))
-	title = db.Column(db.String(50), nullable=False)
-	audio = db.Column(db.String(200), nullable=False)
+	artist = db.Column(db.String(75))
+	title = db.Column(db.String(100), nullable=False)
+	audio = db.Column(db.String(250), nullable=False)
 
 
 	def __repr__(self):
@@ -133,7 +133,7 @@ def init_app():
     print("Connected to DB.")
 
 
-def connect_to_db(app):
+def connect_to_db(app, db_uri="postgresql:///users"):
     """Connect the database to our Flask app."""
 
     # Configure to use our database.
@@ -142,6 +142,37 @@ def connect_to_db(app):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
     db.init_app(app)
+
+
+def example_data():
+	""" Create example data for the test database. """
+
+	TrackPlaylist.query.delete()
+	Friendship.query.delete()
+	User.query.delete()
+	Playlist.query.delete()
+	Track.query.delete()
+
+	u1 = User(username="HillaryForPres", fname="Hillary", lname="Clinton", email="hclinton@gmail.com", password="bill123")
+	u2 = User(username="HappyMistakes", fname="Bob", lname="Ross", email="paintwithme@yahoo.com", password="paintbrush456")
+
+	p1 = Playlist(user_id=1, title="NPR")
+	p2 = Playlist(user_id=2, title="History")
+
+	t1 = Track(artist='Fresh Air', title='Interview', audio='www.audiofile.com/mp3')
+	t2 = Track(artist='How Stuff Works', title='The Pyramids', audio='www.listen.org/mp3')
+
+	db.session.add_all([u1, u2, p1, p2, t1, t2])
+	db.session.commit()
+
+
+	tp1 = TrackPlaylist(playlist_id=1, track_id=1)
+	tp2 = TrackPlaylist(playlist_id=2, track_id=2)
+
+	f1 = Friendship(user_one_id=1, user_two_id=2)
+
+	db.session.add_all([tp1, tp2, f1])
+	db.session.commit()
 
 
 if __name__ == "__main__":

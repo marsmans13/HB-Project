@@ -22,7 +22,6 @@ app.secret_key = "MySecretKey"
 # Tell Jinja2 to raise an error for undefined variable use.
 app.jinja_env.undefined = StrictUndefined
 
-
 @app.route("/")
 def show_login():
 	""" Show login page. """
@@ -61,8 +60,7 @@ def do_logout():
 	""" Log the user out. """
 
 	session.pop('username', None)
-	session.pop('password', None)
-
+	flash('Logged out.')
 	return redirect("/")
 
 
@@ -90,17 +88,15 @@ def do_registration():
 				fname=fname, lname=lname)
 
 	db.session.add(user)
-
 	db.session.commit()
 
 	return redirect("/user")
 
 
-@app.route("/playlists")
 def show_playlists():
 	""" Show a list of all the user's playlists. """
 
-	username = session['username']
+	username = session.get('username')
 	user = User.query.filter_by(username=username).first()
 	playlists = []
 
@@ -111,24 +107,24 @@ def show_playlists():
 	return playlists
 
 
-@app.route("/playlists.json")
-def json_playlists():
-	""" Show a list of all the user's playlists. """
+# @app.route("/playlists.json")
+# def json_playlists():
+# 	""" Show a list of all the user's playlists. """
 
-	username = session['username']
-	user = User.query.filter_by(username=username).first()
-	playlists = []
+# 	username = session['username']
+# 	user = User.query.filter_by(username=username).first()
+# 	playlists = []
 
-	if user:
-		user_id = user.user_id
-		playlist_objects = Playlist.query.filter_by(user_id=user_id).all()
+# 	if user:
+# 		user_id = user.user_id
+# 		playlist_objects = Playlist.query.filter_by(user_id=user_id).all()
 
-	for obj in playlist_objects:
-		playlist = {}
-		playlist['title'] = obj.title
-		playists.append(playlist)
+# 	for obj in playlist_objects:
+# 		playlist = {}
+# 		playlist['title'] = obj.title
+# 		playists.append(playlist)
 
-	return jsonify(playlists)
+# 	return jsonify(playlists)
 
 
 @app.route("/user")
@@ -143,13 +139,9 @@ def show_profile(username='user'):
 	playlists = []
 	friends = []
 
-	# print(user_join)
-
 	user = User.query.filter_by(username=username).first()
 
 	user_join = db.session.query(User).options(joinedload(User.friends)).all()
-
-	# user_join = db.session.query(User).options(joinedload(User.friends)).filter_by(user_one_id=current_user).all()
 
 	if user:
 		user_id = user.user_id
@@ -157,7 +149,6 @@ def show_profile(username='user'):
 		# returns friendship obj:
 		# <Friendship friendship_id="f_id" user_one_id="user_id" user_two_id="friend_id">
 
-		# friendship_objects = Friendship.query.filter_by(user_one_id=user_id).all()
 		friend_ids = []
 
 		for friend in friend_objects:
@@ -189,13 +180,9 @@ def show_search_form():
 def search_podcasts():
 	""" Search podcasts by name/keyword. """
 
-	# iTunes API requests
-
 	search_input = request.args.get('q')
 	search_list = [term for term in search_input]
 	search_terms = "+".join(search_list)
-
-	# Change limit after testing
 
 	# -------------------ITUNES REQUEST--------------------------
 
@@ -211,6 +198,7 @@ def search_podcasts():
 
 	results = response['results']
 
+	# Parse xml file returned to retrieve individual track info
 	for result in results:
 		if (result.get('feedUrl')):
 			xml_url = result['feedUrl']
@@ -244,29 +232,6 @@ def search_podcasts():
 	for result in results:
 		if result['collectionName'] not in collections:
 			collections.append(result['collectionName'])
-
-	# --------------------SPOTIFY REQUEST------------------------
-
-	# sp_response = []
-
-	# payload = {
-	# 	'q': search_input,
-	# 	'limit': 20,
-	# 	'type': 'track'
-	# }
-
-	# if session.get('token'):
-	# 	headers = {"Authorization":"Bearer {}".format(session['token'])}
-
-	# 	sp_response = requests.get('https://api.spotify.com/v1/search',
-	# 								params=payload, headers=headers).json()
-
-	# 	if sp_response.get('tracks'):
-	# 		sp_response = sp_response['tracks']['items']
-	# 	else:
-	# 		sp_reponse = []
-
-	# print(sp_response)
 
 	# --------------------GPODDER REQUEST------------------------
 
@@ -319,7 +284,6 @@ def search_podcasts():
 
 	return render_template("search_results.html",
 							results=results,
-							gpo_response=gpo_response,
 							playlists=playlists)
 
 
@@ -332,7 +296,6 @@ def get_top_rated():
 	toplist_results = client.get_toplist()
 	top_podcasts = {}
 	for index, entry in enumerate(toplist_results):
-		# print("{} (subscribers: {})".format(entry.title, entry.subscribers))
 		top_podcasts[(index + 1)] = [entry.title, entry.mygpo_link]
 
 	return render_template("top_podcasts.html", top_podcasts=top_podcasts)
@@ -342,7 +305,6 @@ def get_top_rated():
 def add_new_playlist():
 	""" Add a new playlist. """
 
-	# pop-up that allows user to create new playlist with a name and description
 	title = request.form.get("playlist-name")
 	description = request.form.get("description")
 
@@ -360,6 +322,16 @@ def add_new_playlist():
 	flash("Playlist added")
 
 	return redirect("/user")
+
+
+# @app.route("/pick-playlist")
+# def pick_playlist():
+# 	""" Gets which playlist the user wants to add a track to. """
+
+# 	title = request.args.get("playlist")
+# 	artist = request.args.get("artist")
+
+# 	return [title, artist]
 
 
 @app.route("/add-track", methods=['POST'])
@@ -412,11 +384,6 @@ def delete_track():
 
 	return redirect("/user")
 
-# @app.route("/user/<playlist_name>")
-# def show_podcasts_playlist(username, playlist_name):
-#   """ Show a list of all the podcasts in a particular playlist. """
-
-#   pass
 
 @app.route("/search-users")
 def search_users():
@@ -487,6 +454,66 @@ def show_user_info():
 
 	pass
 
+
+@app.route("/search-events-form")
+def show_search_events():
+
+	username = session['username']
+
+	user = User.query.filter_by(username=username).first()
+
+	playlists = []
+
+	if user:
+		user_id = user.user_id
+		playlists = Playlist.query.filter_by(user_id=user_id).all()
+
+	artists = []
+
+	if playlists:
+		for playlist in playlists:
+			for track in playlist.tracks:
+				if track.artist not in artists:
+					artists.append(track.artist)
+
+	print(artists)
+
+	events = []
+
+	return render_template("event_search.html", artists=artists, events=events)
+
+@app.route("/search-events")
+def search_events():
+	""" Use Eventbrite API to search events related to user's podcasts. """
+
+	location = request.args.get("location")
+	print(location)
+	search_input = request.args.get("search-terms")
+
+	search_list = search_input.split()
+	search_terms = "+".join(search_list)
+
+	from eventbrite import Eventbrite
+
+	eventbrite = Eventbrite('YHXAIYNKIL7WNRQDO4LX')
+
+	data = {
+		'location.address': location,
+		'q': search_terms,
+	}
+
+	events = eventbrite.get('/events/search/', data=data)
+
+	# events = eventbrite.get_event('/search?q={}&location.address={}'.format(search_terms, location))
+
+	if events.get('events'):
+		events = events['events']
+	else:
+		events = []
+
+	artists = []
+
+	return render_template("event_search.html", events=events, artists=artists)
 
 if __name__ == "__main__":
 	# set to true to use DebugToolbar

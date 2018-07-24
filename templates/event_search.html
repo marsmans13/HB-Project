@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+
+{% if artists %}
+<div class="row">
+	<div class="col-sm-6">
+		<h3 class="title"> Your Artists </h3>
+		<form action="/search-events">
+			{% for artist in artists %}
+				<input type="radio" name="search-terms" value="{{ artist }}">{{ artist }}
+				<br>
+			{% endfor %}
+			<br>
+			<input type="text" name="location" placeholder="Location" required>
+			<input type="submit" class="btn btn-color" value="Submit">
+		</form>
+	</div>
+</div>
+{% endif %}
+
+{% if events %}
+
+<h2 class="title"> Events Near You </h2>
+<ol>
+	{% for event in events %}
+
+		<li> <a href="{{ event['url'] }}"> {{ event['name']['text'] }} </a> </li>
+
+	{% endfor %}
+</ol>
+
+{% endif %}
+<br>
+<div class="row">
+	<div class="col-sm-6">
+
+		<h3 class="title"> Search Other Events </h3>
+
+		<form action='/search-events'>
+			<input type="text" name="search-terms" placeholder="Search events" required>
+			<input type="text" name="location" placeholder="Location" required>
+			<input type="submit" class="btn btn-color" value="Submit">
+		</form>
+	</div>
+</div>
+
+
+</div>
+{% endblock %}
