@@ -4,126 +4,138 @@ from sqlalchemy import UniqueConstraint
 db = SQLAlchemy()
 
 class User(db.Model):
-	"""User model."""
+    """User model."""
 
-	__tablename__ = "users"
+    __tablename__ = "users"
 
-	user_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
-	username = db.Column(db.String(50), unique=True, nullable=False)
-	email = db.Column(db.String(100), unique=True, nullable=False)
-	password = db.Column(db.String(50), nullable=False)
-	fname = db.Column(db.String(50), nullable=False)
-	lname = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(50), nullable=False)
+    fname = db.Column(db.String(50), nullable=False)
+    lname = db.Column(db.String(50), nullable=False)
 
-	friends = db.relationship('Friendship',
-							  primaryjoin="(User.user_id==Friendship.user_one_id)")
+    friends = db.relationship('Friendship',
+                              primaryjoin="(User.user_id==Friendship.user_one_id)")
 
-	def __repr__(self):
+    def is_authenticated(self):
+        return True
+ 
+    def is_active(self):
+        return True
+ 
+    def is_anonymous(self):
+        return False
+ 
+    def get_id(self):
+        return str(self.user_id)
 
-		s = """
-		<User:
-		user_id = {}
-		username = {}
-		email = {}
-		password = {}
-		name = {} {}>
-		""".format(self.user_id, self.username, self.email, self.password,
-				   self.fname, self.lname)
+    def __repr__(self):
 
-		return s
+        s = """
+        <User:
+        user_id = {}
+        username = {}
+        email = {}
+        password = {}
+        name = {} {}>
+        """.format(self.user_id, self.username, self.email, self.password,
+                   self.fname, self.lname)
+
+        return s
 
 
 class Playlist(db.Model):
-	"""List of user's playlists."""
+    """List of user's playlists."""
 
-	__tablename__ = "playlists"
+    __tablename__ = "playlists"
 
-	playlist_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-	user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
-	title = db.Column(db.String(100))
+    playlist_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    title = db.Column(db.String(100))
 
-	user = db.relationship('User',
-							backref=db.backref('playlists'))
+    user = db.relationship('User',
+                            backref=db.backref('playlists'))
 
-	tracks = db.relationship('Track',
-							 secondary='track_playlist',
-							 backref=db.backref('playlists'))
+    tracks = db.relationship('Track',
+                             secondary='track_playlist',
+                             backref=db.backref('playlists'))
 
-	def __repr__(self):
+    def __repr__(self):
 
-		s = """
-		<Playlist:
-		playlist_id = {}
-		user_id = {}
-		title = {}>
-		""".format(self.playlist_id, self.user_id, self.title)
+        s = """
+        <Playlist:
+        playlist_id = {}
+        user_id = {}
+        title = {}>
+        """.format(self.playlist_id, self.user_id, self.title)
 
-		return s
+        return s
 
 
 class Track(db.Model):
-	"""List of podcasts in a user's playlist."""
+    """List of podcasts in a user's playlist."""
 
-	__tablename__ = "tracks"
+    __tablename__ = "tracks"
 
-	track_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-	artist = db.Column(db.String(75))
-	title = db.Column(db.String(100), nullable=False)
-	audio = db.Column(db.String(250), nullable=False)
+    track_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    artist = db.Column(db.String(75))
+    title = db.Column(db.String(100), nullable=False)
+    audio = db.Column(db.String(250), nullable=False)
 
 
-	def __repr__(self):
+    def __repr__(self):
 
-		s = """
-		<Track:
-		track_id = {}
-		artist = {}
-		title = {}
-		audio = {}>
-		""".format(self.track_id, self.artist, self.title, self.audio)
+        s = """
+        <Track:
+        track_id = {}
+        artist = {}
+        title = {}
+        audio = {}>
+        """.format(self.track_id, self.artist, self.title, self.audio)
 
-		return s
+        return s
 
 
 class TrackPlaylist(db.Model):
-	"""Association table between Playlist and Track."""
+    """Association table between Playlist and Track."""
 
-	__tablename__ = "track_playlist"
+    __tablename__ = "track_playlist"
 
-	tp_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-	playlist_id = db.Column(db.Integer,
-							db.ForeignKey('playlists.playlist_id'),
-							nullable=False)
-	track_id = db.Column(db.Integer,
-						 db.ForeignKey('tracks.track_id'),
-						 nullable=False)
+    tp_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    playlist_id = db.Column(db.Integer,
+                            db.ForeignKey('playlists.playlist_id'),
+                            nullable=False)
+    track_id = db.Column(db.Integer,
+                         db.ForeignKey('tracks.track_id'),
+                         nullable=False)
 
 
 class Friendship(db.Model):
-	"""Define relationship between two users."""
+    """Define relationship between two users."""
 
-	__tablename__ = "friendships"
-	
-	friendship_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-	user_one_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
-	user_two_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    __tablename__ = "friendships"
+    
+    friendship_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    user_one_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    user_two_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
 
-	# must be tuple, dictionary
-	__table_args__ = (db.UniqueConstraint('user_one_id', 'user_two_id', name='relationship_check'),)
+    # must be tuple, dictionary
+    __table_args__ = (db.UniqueConstraint('user_one_id', 'user_two_id', name='relationship_check'),)
 
-	def __repr__(self):
+    def __repr__(self):
 
-		s = """
-		<Friendship:
-		Friendship_id = {}
-		user_one_id = {}
-		user_two_id = {}>
-		""".format(self.friendship_id,
-				   self.user_one_id,
-				   self.user_two_id)
+        s = """
+        <Friendship:
+        Friendship_id = {}
+        user_one_id = {}
+        user_two_id = {}>
+        """.format(self.friendship_id,
+                   self.user_one_id,
+                   self.user_two_id)
 
-		return s
-	
+        return s
+    
 
 def init_app():
     from flask import Flask
@@ -137,7 +149,7 @@ def connect_to_db(app, db_uri="postgresql:///users"):
     """Connect the database to our Flask app."""
 
     # Configure to use our database.
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///users'
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_ECHO'] = False
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
@@ -145,37 +157,31 @@ def connect_to_db(app, db_uri="postgresql:///users"):
 
 
 def example_data():
-	""" Create example data for the test database. """
+    """ Create example data for the test database. """
 
-	TrackPlaylist.query.delete()
-	Friendship.query.delete()
-	User.query.delete()
-	Playlist.query.delete()
-	Track.query.delete()
+    u1 = User(username="HillaryForPres", fname="Hillary", lname="Clinton", email="hclinton@gmail.com", password="bill123")
+    u2 = User(username="HappyMistakes", fname="Bob", lname="Ross", email="paintwithme@yahoo.com", password="paintbrush456")
 
-	u1 = User(username="HillaryForPres", fname="Hillary", lname="Clinton", email="hclinton@gmail.com", password="bill123")
-	u2 = User(username="HappyMistakes", fname="Bob", lname="Ross", email="paintwithme@yahoo.com", password="paintbrush456")
+    p1 = Playlist(user_id=1, title="NPR")
+    p2 = Playlist(user_id=2, title="History")
 
-	p1 = Playlist(user_id=1, title="NPR")
-	p2 = Playlist(user_id=2, title="History")
+    t1 = Track(artist='Fresh Air', title='Interview', audio='www.audiofile.com/mp3')
+    t2 = Track(artist='How Stuff Works', title='The Pyramids', audio='www.listen.org/mp3')
 
-	t1 = Track(artist='Fresh Air', title='Interview', audio='www.audiofile.com/mp3')
-	t2 = Track(artist='How Stuff Works', title='The Pyramids', audio='www.listen.org/mp3')
-
-	db.session.add_all([u1, u2, p1, p2, t1, t2])
-	db.session.commit()
+    db.session.add_all([u1, u2, p1, p2, t1, t2])
+    db.session.commit()
 
 
-	tp1 = TrackPlaylist(playlist_id=1, track_id=1)
-	tp2 = TrackPlaylist(playlist_id=2, track_id=2)
+    tp1 = TrackPlaylist(playlist_id=1, track_id=1)
+    tp2 = TrackPlaylist(playlist_id=2, track_id=2)
 
-	f1 = Friendship(user_one_id=1, user_two_id=2)
+    f1 = Friendship(user_one_id=1, user_two_id=2)
 
-	db.session.add_all([tp1, tp2, f1])
-	db.session.commit()
+    db.session.add_all([tp1, tp2, f1])
+    db.session.commit()
 
 
 if __name__ == "__main__":
 
-	init_app()
+    init_app()
 

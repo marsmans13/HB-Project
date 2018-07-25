@@ -1,17 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="container-fluid">
 
-<h2> Website Name </h2>
+	
+	<div class="row">
+		<div class="form-signin col-sm-6 col-sm-offset-3">
+			<div class="col-6">
+				<h2> Website Name </h2>
+			</div>
+			<div class="col-6">
+				<h3> Register </h3>
+			</div>
+			<form action="/registration" method="post">
+				Email <input type='text' class="form-control" name='email' required><br>
+				Username <input type='text' class="form-control" name='username' required><br>
+				Password <input type='password' class="form-control" name='password' required><br>
+				First Name <input type='text' class="form-control" name='fname' required><br>
+				Last Name <input type='text' class="form-control" name='lname' required><br>
+				<input type='submit' class="btn btn-color btn-block" value="Submit">
+			</form>
+		</div>
+	</div>
 
-<h3> Register </h3>
-
-<form action="/registration-submit" method="post">
-	Email <input type='text' name='email' required><br>
-	Username <input type='text' name='username' required><br>
-	Password <input type='password' name='password' required><br>
-	First Name <input type='text' name='fname' required><br>
-	Last Name <input type='text' name='lname' required><br>
-	<input type='submit' value="Submit">
-</form>
-
+</div>
 {% endblock %}

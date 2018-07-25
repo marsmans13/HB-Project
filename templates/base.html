@@ -37,7 +37,7 @@
 	      <li><a href="/top-podcasts">Top Podcasts</a></li>
 	      <li><a href="/search-events-form">Events</a></li>
 	    </ul>
-	    <form class="navbar-form navbar-left" action="/search-submit">
+	    <form class="navbar-form navbar-left" action="/search">
 	      <div class="form-group">
 	        <input type="text" class="form-control" placeholder="Search podcasts" name="q">
 	      </div>
@@ -57,23 +57,11 @@
 	{% endif %}
 	{% endwith %}
 
-<!-- 	<p> <a href="/user"> Home </a> </p>
-
-	<p> <a href="/top-podcasts"> View Top Podcasts </a> </p> -->
-
-	
-
-<!-- TODO: Use if statement to check if user in sessions, if so show logout and not login form, and vice versa -->
-
     {% block content %} put your content here {% endblock %}
 
-    {% if session.get('username') %}
-    <br>
-    <form action = "/logout" method="post">
-		<input type='submit' class="btn" value="Log Out">
-	</form>
-
-	{% endif %}
+{% if g.user.is_authenticated()%}
+    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+{% endif %}
 
 </body>
 </html>

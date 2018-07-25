@@ -8,35 +8,31 @@
 {% for result in results %}
 	{% if result.get('elements') %}
 
-	<h3 class="title"> {{ result['collectionName'] }} </h3>
-	<img src="{{ result['artworkUrl60'] }}" /> 
+	<h3 class="title"> {{ result['collectionName'] }}</h3>
+	<img src="{{ result['artworkUrl60'] }}" /><br><br>
+	<button id="{{ result['trackId'] }}"> View Tracks </button>
 	<br><br>
+	<div id="tracks{{ result['trackId'] }}">
 
 		{% for elem in result['elements'] %}
-		
-		<form action="add-track" method="POST">
+			<form action="add-track" method="POST">
+				<div>
+					<input type="submit" value="+">{{ elem[1] }}
+					<input type="hidden" name="title" value="{{ elem[1] }}">
+					<input type="hidden" name="rss" value="{{ elem[0] }}">
+				</div>
 
-			<div>
-				{{ elem[1] }}
-				<input type="hidden" name="title" value="{{ elem[1] }}">
-				<input type="hidden" name="rss" value="{{ elem[0] }}">
-			</div>
-
-			{% if playlists %}	
-				{% for playlist in playlists %}
-
-					<div id="playlist{{ elem[1] }}">
-						<input type="radio" name="playlist" value="{{ playlist.title }}" required>{{ playlist.title }}
-						<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
-
-				{% endfor %}
-				<input type="submit" value="+">
-			</div>
-				
-			{% endif %}
-		</form>
-
-		{% endfor %}
+				{% if playlists %}	
+					{% for playlist in playlists %}
+						<div>
+							<input type="radio" name="playlist" value="{{ playlist.title }}" required>{{ playlist.title }}
+							<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
+						</div>
+					{% endfor %}
+				{% endif %}
+			</form>
+			{% endfor %}
+		</div>
 
 	{% endif %}
 
@@ -44,25 +40,32 @@
 
 <script>
 	
-	function getPlaylists() {
-		$.get("/playlists.json", showPlaylists);
-	}
-
-	function showPlaylists(results) {
-		let playlists = results;
-		$("#playlist-popup").html(playlists);
-	}
-
-	$("#add-track").on('click', getPlaylists);
+	// function showPlaylists(results) {
+	// 	let playlists = results;
+	// 	$("#playlist-popup").html(playlists);
+	// }
 
 	// $(document).ready(function () {
 	// 	$("[id*=playlist]").hide();
 	// 	$("button").on('click', function() {
 	// 		let id = $(this).attr("id");
+	// 		console.log(id);
 	// 		let thisDiv = "#playlist" + id;
+	// 		console.log(thisDiv);
 	// 		$(thisDiv).toggle();
 	// 	});
 	// });
+
+	$(document).ready(function () {
+		$("[id*=tracks]").hide();
+		$("button").on('click', function() {
+			let id = $(this).attr("id");
+			console.log(id);
+			let thisDiv = "#tracks" + id;
+			console.log(thisDiv);
+			$(thisDiv).toggle();
+		});
+	});
 
 </script>
 

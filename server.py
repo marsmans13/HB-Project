@@ -3,16 +3,15 @@ import requests
 import json
 import xml.etree.ElementTree
 from mygpoclient import public
-
-from flask import (Flask, render_template, redirect, request, flash, session, jsonify)
+from flask import (Flask, render_template, redirect,
+				   request, flash, session, jsonify, abort, g)
 from flask_debugtoolbar import DebugToolbarExtension
-
 from sqlalchemy import func
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import joinedload
-
 from model import (connect_to_db, db,
 				   User, Playlist, Track, TrackPlaylist, Friendship)
+import flask_login
 
 
 app = Flask(__name__)
@@ -22,75 +21,111 @@ app.secret_key = "MySecretKey"
 # Tell Jinja2 to raise an error for undefined variable use.
 app.jinja_env.undefined = StrictUndefined
 
+
+#---------------------FLASK-LOGIN----------------------
+
+login_manager = flask_login.LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+    
+
+@login_manager.user_loader
+def load_user(user_id):
+
+	return User.query.get(int(user_id))
+
+
+@login_manager.request_loader
+def request_loader(request):
+
+	username = request.form.get('username')
+	my_user = User.query.filter_by(username=username).first()
+
+	if not my_user:
+		return
+
+	user = FlaskUser()
+	user.id = username
+
+	user.is_authenticated = request.form.get('password') == my_user.password
+
+	return user
+
+
+@app.route('/registration', methods=['GET', 'POST'])
+def register():
+
+	if request.method == 'GET':
+		return render_template('registration_form.html')
+	user = User(username=request.form.get('username'), password=request.form.get('password'),
+				email=request.form.get('email'), fname=request.form.get('fname'),
+				lname=request.form.get('lname'))
+	db.session.add(user)
+	db.session.commit()
+	flash('Registration successful.')
+	return redirect('/login')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+
+	if request.method == 'GET':
+		return render_template('homepage.html')
+
+	username = request.form.get('username')
+	password = request.form.get('password')
+	user = User.query.filter_by(username=username, password=password).first()
+
+	if user is None:
+		flash('Username or password is invalid.')
+		return redirect('/login')
+
+	session['username'] = username
+
+	flask_login.login_user(user)
+	flash('Logged in.')
+	return redirect(request.args.get('next') or '/user')
+
+
+@app.route('/protected')
+@flask_login.login_required
+def protected():
+	return 'Logged in as: {}'.format(flask_login.current_user.username)
+
+
+@app.route('/logout')
+def logout():
+	flask_login.logout_user()
+	return redirect('/login')
+
+@app.before_request
+def before_request():
+    g.user = flask_login.current_user
+
+# @login_manager.unauthorized_handler
+# def unauthorized_handler():
+#     return 'Unauthorized'
+
+
+	# form = LoginForm()
+	# if form.validate_on_submit():
+	# 	login_user(user)
+
+	# 	flash('Logged in.')
+
+	# 	next = request.args.get('next')
+	# 	if not is_safe_url(next):
+	# 		return abort(400)
+
+	# 	return redirect(next or '/user')
+	# return render_template('homepage.html', form=form)
+
+
 @app.route("/")
 def show_login():
 	""" Show login page. """
 
-	if session.get("username"):
-		return redirect("/user")
-
 	return render_template("homepage.html")
-
-
-@app.route("/login", methods=['POST'])
-def do_login():
-	""" Check login info and either perform login or flash error message. """
-
-	username = request.form.get('username')
-	password = request.form.get('password')
-
-	user = User.query.filter(User.username==username).first()
-
-	if user:
-		if user.password == password:
-			session['username'] = username
-			flash("Logged in.")
-			return redirect("/user")
-		else:
-			flash("Password incorrect.")
-			return redirect("/")
-
-	else:
-		flash("Username not recognized.")
-		return redirect("/")
-
-
-@app.route("/logout", methods=['POST'])
-def do_logout():
-	""" Log the user out. """
-
-	session.pop('username', None)
-	flash('Logged out.')
-	return redirect("/")
-
-
-@app.route("/registration")
-def show_registration():
-	""" Show registration form for new users. """
-
-	return render_template("registration_form.html")
-
-
-@app.route("/registration-submit", methods=['POST'])
-def do_registration():
-	""" Add a new user to the database. """
-
-	email = request.form.get("email")
-	username = request.form.get("username")
-	password = request.form.get("password")
-	fname = request.form.get("fname")
-	lname = request.form.get("lname")
-
-	session['username'] = username
-	flash("Logged in.")
-
-	user = User(email=email, username=username, password=password,
-				fname=fname, lname=lname)
-
-	db.session.add(user)
-	db.session.commit()
-
-	return redirect("/user")
 
 
 def show_playlists():
@@ -128,13 +163,14 @@ def show_playlists():
 
 
 @app.route("/user")
+@flask_login.login_required
 def show_profile(username='user'):
 	""" Show user's profile page. """
 
 	username = session.get('username')
-	if not username:
-		flash("You are not logged in")
-		return redirect("/")
+	# if not username:
+	# 	flash("You are not logged in")
+	# 	return redirect("/")
 
 	playlists = []
 	friends = []
@@ -169,22 +205,8 @@ def show_profile(username='user'):
 							friends=friends)
 
 
-@app.route("/search")
-def show_search_form():
-	""" Search podcasts by name/keyword. """
-
-	return render_template("search.html")
-
-
-@app.route("/search-submit")
-def search_podcasts():
-	""" Search podcasts by name/keyword. """
-
-	search_input = request.args.get('q')
-	search_list = [term for term in search_input]
-	search_terms = "+".join(search_list)
-
-	# -------------------ITUNES REQUEST--------------------------
+def get_podcasts(search_terms):
+	""" Make request to iTunes and return result. """
 
 	payload = {
 		'term': search_terms,
@@ -195,6 +217,32 @@ def search_podcasts():
 
 	response = requests.get('https://itunes.apple.com/search',
 							params=payload).json()
+
+	return response
+
+
+@app.route("/search")
+@flask_login.login_required
+def search_podcasts():
+	""" Search podcasts by name/keyword. """
+
+	search_input = request.args.get('q')
+	search_list = [term for term in search_input]
+	search_terms = "+".join(search_list)
+
+	# -------------------ITUNES REQUEST--------------------------
+
+	# payload = {
+	# 	'term': search_terms,
+	# 	'limit': 5,
+	# 	'entity': 'podcast',
+	# 	'kind': 'podcast-episode'
+	# }
+
+	# response = requests.get('https://itunes.apple.com/search',
+	# 						params=payload).json()
+
+	response = get_podcasts(search_terms)
 
 	results = response['results']
 
@@ -232,6 +280,7 @@ def search_podcasts():
 	for result in results:
 		if result['collectionName'] not in collections:
 			collections.append(result['collectionName'])
+
 
 	# --------------------GPODDER REQUEST------------------------
 
@@ -288,15 +337,18 @@ def search_podcasts():
 
 
 @app.route("/top-podcasts")
+@flask_login.login_required
 def get_top_rated():
 	""" Returns a list of the 50 top podcasts and number of subscribers. """
 
 	client = public.PublicClient()
 
-	toplist_results = client.get_toplist()
 	top_podcasts = {}
-	for index, entry in enumerate(toplist_results):
-		top_podcasts[(index + 1)] = [entry.title, entry.mygpo_link]
+
+	if client.get_toplist():
+		toplist_results = client.get_toplist()
+		for index, entry in enumerate(toplist_results):
+			top_podcasts[(index + 1)] = [entry.title, entry.mygpo_link]
 
 	return render_template("top_podcasts.html", top_podcasts=top_podcasts)
 
@@ -328,10 +380,9 @@ def add_new_playlist():
 # def pick_playlist():
 # 	""" Gets which playlist the user wants to add a track to. """
 
-# 	title = request.args.get("playlist")
-# 	artist = request.args.get("artist")
+# 	playlist_title = request.args.get("playlist")
 
-# 	return [title, artist]
+# 	return playlist_title
 
 
 @app.route("/add-track", methods=['POST'])
@@ -346,6 +397,8 @@ def add_track():
 	title = request.form.get("title")
 	rss = request.form.get("rss")
 	playlist_title = request.form.get("playlist")
+
+	# playlist_title = pick_playlist()
 
 	track = Track(artist=artist, title=title, audio=rss)
 	db.session.add(track)
@@ -429,6 +482,7 @@ def add_friend():
 
 
 @app.route("/friend")
+@flask_login.login_required
 def show_friend_profile():
 	""" Show profile/playlists of a profile the user is following. """
 
@@ -483,6 +537,7 @@ def show_search_events():
 	return render_template("event_search.html", artists=artists, events=events)
 
 @app.route("/search-events")
+@flask_login.login_required
 def search_events():
 	""" Use Eventbrite API to search events related to user's podcasts. """
 
