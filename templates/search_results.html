@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container-fluid">
-
+	
+{% if results %}
 <h2 class="title">Results</h2>
 
-{% if results %}
 {% for result in results %}
 	{% if result.get('elements') %}
 
@@ -37,6 +37,11 @@
 	{% endif %}
 
 {% endfor %}
+{% else %}
+
+<h3> No results to show </h3>
+
+{% endif %}
 
 <script>
 	
@@ -69,7 +74,6 @@
 
 </script>
 
-{% endif %}
 <br><br>
 
 </div>

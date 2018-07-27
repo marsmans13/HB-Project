@@ -1,7 +1,7 @@
 from server import app
 from unittest import TestCase, mock
 import requests
-from model import connect_to_db, db, example_data
+from model import connect_to_db, db, example_data, Track
 from flask import session
 
 
@@ -15,6 +15,16 @@ class FlaskTestsBasic(TestCase):
 
 		# Show Flask errors that occur during tests
 		app.config['TESTING'] = True
+
+		connect_to_db(app, "postgresql:///testdb")
+
+		db.create_all()
+		example_data()
+
+	def tearDown(self):
+
+		db.session.close()
+		db.drop_all()
 
 
 	def test_index(self):
@@ -40,6 +50,10 @@ class FlaskTestsLoggedIn(TestCase):
 			with c.session_transaction() as sess:
 				sess['username'] = 'HillaryForPres'
 
+		self.client.post('/login',
+						data={'username': 'HillaryForPres', 'password': 'bill123'},
+						follow_redirects=True)
+
 
 	def tearDown(self):
 
@@ -57,7 +71,7 @@ class FlaskTestsLoggedIn(TestCase):
 	def test_show_profile(self):
 		""" Tests that profile page loads correctly for user. """
 
-		result = self.client.get("/user")
+		result = self.client.get("/user", follow_redirects=True)
 		self.assertIn(b'Hello, Hillary', result.data)
 
 
@@ -112,15 +126,16 @@ class FlaskTestsLogInLogOut(TestCase):
 	def test_registration_form(self):
 		""" Testing registration form route. """
 
-		result = self.client.get("/registration")
-		self.assertIn(b'<form action="/registration-submit" method="post">',
+		result = self.client.get("/registration", method='GET')
+		self.assertIn(b'<form action="/registration" method="post">',
 					  result.data)
 
 
 	def test_register(self):
 		""" Test that db updates to reflect new user. """
 
-		result = self.client.post("/registration-submit",
+		result = self.client.post("/registration",
+								 method='POST',
 								 data={'username': 'henrythepup',
 								 	   'fname': 'Henry',
 								 	   'lname': 'Louise',
@@ -128,7 +143,7 @@ class FlaskTestsLogInLogOut(TestCase):
 								 	   'password': 'bonesforever'},
 								 follow_redirects=True)
 
-		self.assertIn(b'Hello, Henry', result.data)
+		self.assertIn(b'Sign In', result.data)
 
 
 class FlaskTestsDatabase(TestCase):
@@ -149,11 +164,75 @@ class FlaskTestsDatabase(TestCase):
 			with c.session_transaction() as sess:
 				sess['username'] = 'HillaryForPres'
 
+		self.client.post('/login',
+						data={'username': 'HillaryForPres', 'password': 'bill123'},
+						follow_redirects=True)
 
 	def tearDown(self):
 		
 		db.session.close()
 		db.drop_all()
+
+
+	def test_add_playlist(self):
+		""" Test add playlist route. """
+
+		result = self.client.post('/add-playlist',
+								 data={'title': 'News'},
+								 follow_redirects=True)
+		self.assertIn(b'Playlist added', result.data)
+
+
+	def test_add_track(self):
+		""" Test add track route. """
+
+		self.client.post('/add-playlist',
+						 data={'title': 'News'})
+
+		result = self.client.post('/add-track',
+								  data={'artist': 'Mark Maron',
+								  		'title': 'Some Interview',
+								  		'rss': 'thisaudiofile.mp3',
+								  		'playlist_title': 'News'},
+								  follow_redirects=True)
+		self.assertIn(b'Some Interview', result.data)
+
+
+	def test_delete_track(self):
+
+		self.client.post('/add-playlist',
+						 data={'title': 'News'})
+
+		self.client.post('/add-track',
+						 data={'artist': 'Mark Maron',
+						 'title': 'Some Interview',
+						 'rss': 'thisaudiofile.mp3',
+						 'playlist_title': 'News'})
+
+		result = self.client.post('/delete-track',
+								  data={'track_id': 3},
+								  follow_redirects=True)
+
+		self.assertNotIn(b'Some Interview', result.data)
+
+
+	def test_search_users(self):
+
+		result = self.client.get('/search-users',
+								 data={'username': 'HappyTrees'},
+								 follow_redirects=True)
+
+		self.assertIn(b'HappyTrees', result.data)
+
+
+	# def test_add_friend(self):
+
+	# 	result = self.client.post('/add-friend',
+	# 							  method='POST',
+	# 							  data={'friend_username': 'HappyMistakes'},
+	# 							  follow_redirects=True)
+
+	# 	self.assertIn(b'Visit HappyMistakes', result.data)
 
 
 def itunes_query(query):
@@ -167,8 +246,18 @@ def itunes_query(query):
 	}
 	resp = requests.get(url, params=payload)
 	resp.raise_for_status()
+
 	return resp.content
 
+
+def gpodder_request():
+
+	from mygpoclient import public
+	client = public.PublicClient()
+	if client.get_toplist():
+		toplist_results = client.get_toplist()
+
+	return toplist_results
 
 
 class FlaskTestsRequestsCall(TestCase):
@@ -186,7 +275,7 @@ class FlaskTestsRequestsCall(TestCase):
 
 	def tearDown(self):
 
-		db.session.close()
+		pass
 
 	def _mock_response(self,
 					   status=200,
@@ -216,6 +305,17 @@ class FlaskTestsRequestsCall(TestCase):
 
 		result = itunes_query('fresh+air')
 		self.assertEqual(result, "FRESH AIR")
+		self.assertEqual(mock_resp.status_code, 200)
+
+
+	@mock.patch("requests.get")
+	def test_gpodder_request(self, mock_get):
+		""" Test gpodder request. """
+
+		mock_resp = self._mock_response()
+		mock_get.return_value = mock_resp
+
+		result = gpodder_request()
 		self.assertEqual(mock_resp.status_code, 200)
 
 

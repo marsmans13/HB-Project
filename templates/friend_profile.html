@@ -1,25 +1,32 @@
 {% extends 'base.html' %}
 {% block content %}
 
-{% if friend %}
+<div class="container-fluid">
 
-<h2> {{ friend.username }} </h2>
+	<h2> {{ friend.username }} </h2>
 
+	{% if img %}
+	<img height="200px" src="../static/images/{{img}}" /><br>
+	{% endif %}
 
-	<h3> Playlists </h3>
+	<div id="playlist-parent">
 	{% if playlists %}
 
+		<h3 class="title"> Playlists </h3>
+
 		{% for playlist in playlists %}
-		<p> {{ playlist.title }} </p>
+		<p style="font-size:18px"> <button class="btn-color" id="{{ playlist.playlist_id }}" class="btn" style="margin: 5px"> + </button> {{ playlist.title }}</p> 
 
 			{% if playlist.tracks %}
-			<ul>
+			<div class="list-group" id="show-tracks{{ playlist.playlist_id }}">
 				{% for track in playlist.tracks %}
-				<li> {{ track.title }} <br>
-					<audio controls src="{{ track.audio }}">Your browser doesn't support the audio element.</audio>
-				</li>
+				<div class="list-group-item">
+					<h4 class="list-group-item-heading"> {{ track.artist }}: {{ track.title }} </h4>
+					<p class="list-group-item-text"><audio controls src="{{ track.audio }}">Your browser doesn't support the audio element.</audio>
+					</p>
+				</div>
 				{% endfor %}
-			</ul>
+			</div>
 			{% endif %}
 
 		{% endfor %}
@@ -28,6 +35,20 @@
 		<p> No playlists </p>
 	{% endif %}
 
-{% endif %}
+	</div>
+</div>
+
+<script>
+
+$(document).ready(function () {
+	$("[id*=show-tracks]").hide();
+	$("button").on('click', function() {
+		let id = $(this).attr("id");
+		let thisDiv = "#show-tracks" + id;
+		$(thisDiv).toggle();
+	});
+});
+
+</script>
 
 {% endblock %}

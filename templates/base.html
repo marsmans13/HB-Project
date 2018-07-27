@@ -59,8 +59,11 @@
 
     {% block content %} put your content here {% endblock %}
 
-{% if g.user.is_authenticated()%}
-    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+{% if session.get('username') %}
+<div class="container-fluid">
+	<br>
+    <button class="btn btn-default btn-color"><a href="{{ url_for('logout') }}" style="color:white">Logout</a></button>
+</div>
 {% endif %}
 
 </body>

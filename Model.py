@@ -14,6 +14,7 @@ class User(db.Model):
     password = db.Column(db.String(50), nullable=False)
     fname = db.Column(db.String(50), nullable=False)
     lname = db.Column(db.String(50), nullable=False)
+    image = db.Column(db.String(256))
 
     friends = db.relationship('Friendship',
                               primaryjoin="(User.user_id==Friendship.user_one_id)")
@@ -135,6 +136,29 @@ class Friendship(db.Model):
                    self.user_two_id)
 
         return s
+
+
+# class Image(db.Model):
+#     """Store user's current profile image."""
+
+#     __tablename__ = "images"
+
+#     image_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+#     image = db.Column(db.LargeBinary)
+
+#     def __repr__(self):
+
+#         s = """
+#             <Image:
+#             image_id = {}
+#             user_id = {}
+#             image = {}>
+#             """.format(self.image_id,
+#                        self.user_id,
+#                        self.image)
+
+#         return s
     
 
 def init_app():
@@ -160,7 +184,7 @@ def example_data():
     """ Create example data for the test database. """
 
     u1 = User(username="HillaryForPres", fname="Hillary", lname="Clinton", email="hclinton@gmail.com", password="bill123")
-    u2 = User(username="HappyMistakes", fname="Bob", lname="Ross", email="paintwithme@yahoo.com", password="paintbrush456")
+    u2 = User(username="HappyTrees", fname="Bob", lname="Ross", email="paintwithme@yahoo.com", password="paintbrush456")
 
     p1 = Playlist(user_id=1, title="NPR")
     p2 = Playlist(user_id=2, title="History")
@@ -175,7 +199,7 @@ def example_data():
     tp1 = TrackPlaylist(playlist_id=1, track_id=1)
     tp2 = TrackPlaylist(playlist_id=2, track_id=2)
 
-    f1 = Friendship(user_one_id=1, user_two_id=2)
+    f1 = Friendship(user_one_id=2, user_two_id=1)
 
     db.session.add_all([tp1, tp2, f1])
     db.session.commit()
