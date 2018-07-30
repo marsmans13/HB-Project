@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+ 	<style>
+ 		
+
+ 	</style>
 </head>
 <style>
 .navbar-default {
@@ -16,26 +21,43 @@
     color:#444;
     border-radius:0;
 }
+.btn {
+	border: solid lightGrey 1px;
+}
 .btn-color {
     background-color:#999;
     color:#ffffff;
     border-radius:0;
+    border: solid lightGrey 1px;
 }
 .title {
 	color:#333;
 }
+.user-info {
+	border: solid lightGrey 1px;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+.profile-img {
+	border-radius: 10px;
+}
+.playlist-block {
+	border: solid lightGrey 1px;
+}
+
 </style>
 <body>
 	{% if session.get('username') %}
 	<nav class="navbar navbar-default">
 		<div class="container-fluid">
 			<div class="navbar-header">
-		      <a class="navbar-brand" href="#">Website Name</a>
+		      <a class="navbar-brand" href="#">SmartCast</a>
 		    </div>
 	    <ul class="nav navbar-nav">
 	      <li><a href="/user">Home</a></li>
 	      <li><a href="/top-podcasts">Top Podcasts</a></li>
 	      <li><a href="/search-events-form">Events</a></li>
+	      <li><a href="/logout">Logout</a></li>
 	    </ul>
 	    <form class="navbar-form navbar-left" action="/search">
 	      <div class="form-group">
@@ -58,13 +80,6 @@
 	{% endwith %}
 
     {% block content %} put your content here {% endblock %}
-
-{% if session.get('username') %}
-<div class="container-fluid">
-	<br>
-    <button class="btn btn-default btn-color"><a href="{{ url_for('logout') }}" style="color:white">Logout</a></button>
-</div>
-{% endif %}
 
 </body>
 </html>

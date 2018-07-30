@@ -116,6 +116,9 @@ def before_request():
 def show_login():
     """ Show login page. """
 
+    if session.get('username'):
+        return redirect('/user')
+
     return render_template("homepage.html")
 
 
@@ -154,28 +157,25 @@ def show_profile(username='user'):
         # <Friendship friendship_id="f_id" user_one_id="user_id" user_two_id="friend_id">
 
         friend_ids = []
+        num_friends = 0
 
         for friend in friend_objects:
             friend_ids.append(friend.user_two_id)
+            num_friends += 1
 
         friends = []
 
         for f_id in friend_ids:
             friend = User.query.filter_by(user_id=f_id).first()
-            friends.append(friend)
+            friends.append(friend)      
 
     if show_playlists():
         playlists = show_playlists()
 
-    img = None
-    if user.image:
-        img = user.image
-        print(img)
-
     return render_template("user_profile.html",
                             user=user,
-                            img=img,
                             playlists=playlists,
+                            num_friends=num_friends,
                             friends=friends)
 
 
@@ -199,7 +199,6 @@ def upload_photo():
         return redirect('user')
 
     return redirect('/user')
-
 
 
 def get_podcasts(search_terms):
@@ -486,12 +485,25 @@ def show_friend_profile():
     if friend.playlists:
         playlists = friend.playlists
 
-    img = None
-    if friend.image:
-        img = friend.image
+    friend_objects = friend.friends
+
+    friend_ids = []
+    num_friends = 0
+
+    for friend_obj in friend_objects:
+        friend_ids.append(friend_obj.user_two_id)
+        num_friends += 1
+
+    friends = []
+
+    for f_id in friend_ids:
+        friend_obj = User.query.filter_by(user_id=f_id).first()
+        friends.append(friend_obj) 
 
     if friend:
-        return render_template("friend_profile.html", friend=friend, playlists=playlists, img=img)
+        return render_template("friend_profile.html", friend=friend,
+                                playlists=playlists, num_friends=num_friends,
+                                friends=friends)
     else:
         flash("Page not available.")
         return redirect("/")

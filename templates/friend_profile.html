@@ -2,40 +2,60 @@
 {% block content %}
 
 <div class="container-fluid">
+	<div class="row">
+		<div class="col-sm-3 user-info">
 
-	<h2> {{ friend.username }} </h2>
+			<h2> {{ friend.username }} </h2>
 
-	{% if img %}
-	<img height="200px" src="../static/images/{{img}}" /><br>
-	{% endif %}
-
-	<div id="playlist-parent">
-	{% if playlists %}
-
-		<h3 class="title"> Playlists </h3>
-
-		{% for playlist in playlists %}
-		<p style="font-size:18px"> <button class="btn-color" id="{{ playlist.playlist_id }}" class="btn" style="margin: 5px"> + </button> {{ playlist.title }}</p> 
-
-			{% if playlist.tracks %}
-			<div class="list-group" id="show-tracks{{ playlist.playlist_id }}">
-				{% for track in playlist.tracks %}
-				<div class="list-group-item">
-					<h4 class="list-group-item-heading"> {{ track.artist }}: {{ track.title }} </h4>
-					<p class="list-group-item-text"><audio controls src="{{ track.audio }}">Your browser doesn't support the audio element.</audio>
-					</p>
-				</div>
+			{% if friend.image %}
+			<img height="200px" class="profile-img" src="../static/images/{{ friend.image }}" /><br>
+			{% endif %}
+			
+			{% if friends %}
+			<h5 class="title"> Following </h5>
+				{% for friend in friends %}
+				<form action="/friend" method="GET">
+					<img src="../static/images/{{ friend.image }}" height="30px"style="border-radius:3px"></img>
+					<input type="submit" class="btn" name="friend-profile" value="{{ friend.username }}">
+					<input type="hidden" name="friend_id" value="{{ friend.user_id }}">
+				</form>
+				<br>
 				{% endfor %}
-			</div>
+			{% endif %}
+			<h5> {{ num_friends }} followers</h5>
+		</div>
+
+		<div class="col-sm-8 playlist-block">
+			<div id="playlist-parent">
+			{% if playlists %}
+
+				<h3 class="title"> Playlists </h3>
+
+				{% for playlist in playlists %}
+				<p style="font-size:18px"> <button class="btn-color" id="{{ playlist.playlist_id }}" class="btn" style="margin: 5px"> + </button> {{ playlist.title }}</p> 
+
+					{% if playlist.tracks %}
+					<div class="list-group" id="show-tracks{{ playlist.playlist_id }}">
+						{% for track in playlist.tracks %}
+						<div class="list-group-item">
+							<h4 class="list-group-item-heading"> {{ track.artist }}: {{ track.title }} </h4>
+							<p class="list-group-item-text"><audio controls src="{{ track.audio }}">Your browser doesn't support the audio element.</audio>
+							</p>
+						</div>
+						{% endfor %}
+					</div>
+					{% endif %}
+
+				{% endfor %}
+
+			{% else %}
+				<p> No playlists </p>
 			{% endif %}
 
-		{% endfor %}
-
-	{% else %}
-		<p> No playlists </p>
-	{% endif %}
-
+			</div>
+		</div>
 	</div>
+
 </div>
 
 <script>
@@ -43,9 +63,17 @@
 $(document).ready(function () {
 	$("[id*=show-tracks]").hide();
 	$("button").on('click', function() {
+		let btn = $(this).html();
+		if (btn == "-") {
+			$(this).html("+");
+		}
+		else {
+			$(this).html("-");
+		}
 		let id = $(this).attr("id");
 		let thisDiv = "#show-tracks" + id;
 		$(thisDiv).toggle();
+		// $(this).html("-");
 	});
 });
 
