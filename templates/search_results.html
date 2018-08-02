@@ -48,53 +48,7 @@
 <h3> Results not found </h3>
 {% endif %}
 
-<script>
-$(document).ready(function () {
-	$("[id*=playlists]").hide();
-	$("[id*=expand]").on('click', function() {
-		let btn = $(this).html();
-		if (btn == "-") {
-			$(this).html("+");
-		}
-		else {
-			$(this).html("-");
-		}
-		let id = $(this).attr("id");
-		console.log("ID: " + id);
-		id = id.substring(6);
-		let thisDiv = "#playlists" + id;
-		console.log(thisDiv);
-		$(thisDiv).toggle();
-	});
-});
-	
-	// function showPlaylists(results) {
-	// 	let playlists = results;
-	// 	$("#playlist-popup").html(playlists);
-	// }
-
-	// $(document).ready(function () {
-	// 	$("[id*=playlist]").hide();
-	// 	$("button").on('click', function() {
-	// 		let id = $(this).attr("id");
-	// 		console.log(id);
-	// 		let thisDiv = "#playlist" + id;
-	// 		console.log(thisDiv);
-	// 		$(thisDiv).toggle();
-	// 	});
-	// });
-
-	$(document).ready(function () {
-		$("[id*=tracks]").hide();
-		$("[id*=view]").on('click', function() {
-			let id = $(this).attr("id").substring(4);
-			console.log(id);
-			let thisDiv = "#tracks" + id;
-			console.log(thisDiv);
-			$(thisDiv).toggle();
-		});
-	});
-
+<script src="static/results.js">
 </script>
 
 <br><br>
