@@ -10,27 +10,34 @@
 
 	<h3 class="title"> {{ result['collectionName'] }}</h3>
 	<img src="{{ result['artworkUrl60'] }}" /><br><br>
-	<button id="{{ result['trackId'] }}"> View Tracks </button>
+	<button class="btn btn-color" id="view{{ result['trackId'] }}"> View Tracks </button>
 	<br><br>
 	<div id="tracks{{ result['trackId'] }}">
 
 		{% for elem in result['elements'] %}
 			<form action="add-track" method="POST">
 				<div>
-					<input type="submit" value="+">{{ elem[1] }}
+					<button class="btn-color" id="expand{{ elem[2] }}" style="margin-right:5px">
+						+
+					</button>{{ elem[1] }}
 					<input type="hidden" name="title" value="{{ elem[1] }}">
 					<input type="hidden" name="rss" value="{{ elem[0] }}">
 				</div>
 
-				{% if playlists %}	
+				{% if playlists %}
+				<div id="playlists{{ elem[2] }}">	
 					{% for playlist in playlists %}
-						<div>
-							<input type="radio" name="playlist" value="{{ playlist.title }}" required>{{ playlist.title }}
-							<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
-						</div>
+						
+						<input type="radio" name="playlist" value="{{ playlist.title }}" required>{{ playlist.title }}
+						<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
+						
 					{% endfor %}
+					<button class="btn btn-color" type="submit">Add</button>
+				</div>
 				{% endif %}
+				
 			</form>
+			<br>
 			{% endfor %}
 		</div>
 
@@ -38,12 +45,28 @@
 
 {% endfor %}
 {% else %}
-
-<h3> No results to show </h3>
-
+<h3> Results not found </h3>
 {% endif %}
 
 <script>
+$(document).ready(function () {
+	$("[id*=playlists]").hide();
+	$("[id*=expand]").on('click', function() {
+		let btn = $(this).html();
+		if (btn == "-") {
+			$(this).html("+");
+		}
+		else {
+			$(this).html("-");
+		}
+		let id = $(this).attr("id");
+		console.log("ID: " + id);
+		id = id.substring(6);
+		let thisDiv = "#playlists" + id;
+		console.log(thisDiv);
+		$(thisDiv).toggle();
+	});
+});
 	
 	// function showPlaylists(results) {
 	// 	let playlists = results;
@@ -63,8 +86,8 @@
 
 	$(document).ready(function () {
 		$("[id*=tracks]").hide();
-		$("button").on('click', function() {
-			let id = $(this).attr("id");
+		$("[id*=view]").on('click', function() {
+			let id = $(this).attr("id").substring(4);
 			console.log(id);
 			let thisDiv = "#tracks" + id;
 			console.log(thisDiv);

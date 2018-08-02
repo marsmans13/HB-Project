@@ -138,29 +138,6 @@ class Friendship(db.Model):
         return s
 
 
-# class Image(db.Model):
-#     """Store user's current profile image."""
-
-#     __tablename__ = "images"
-
-#     image_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
-#     image = db.Column(db.LargeBinary)
-
-#     def __repr__(self):
-
-#         s = """
-#             <Image:
-#             image_id = {}
-#             user_id = {}
-#             image = {}>
-#             """.format(self.image_id,
-#                        self.user_id,
-#                        self.image)
-
-#         return s
-    
-
 def init_app():
     from flask import Flask
     app = Flask(__name__)

@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
-
 <div class="container-fluid">
 
 <div class="row">
-	<div class="form-signin col-sm-4 col-sm-offset-4">
+	<div class="form-signin col-sm-4 col-sm-offset-4" style="margin-bottom:50px;margin-top:50px;background-color:white">
 		<form action = "/login" method="post">
 			<div class="col-4">
 				<h2> SmartCast </h2>
@@ -13,7 +12,7 @@
 			<div class="col-sm-6">
 			</div>
 			<input type="text" class="form-control" name="username" placeholder="Username">
-
+			<br>
 			<input type="password" class="form-control" name="password" placeholder="Password">
 			    <br><input class="btn btn-lg btn-color btn-block" type='submit' value="Log In">
 			<div>
@@ -24,6 +23,7 @@
 			<form action="/registration">
 				<input type="submit" class="btn btn-color" value="Register">
 			</form>
+			<br>
 		</div>
 	</div>
 </div>

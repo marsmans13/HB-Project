@@ -12,17 +12,16 @@
 			{% endif %}
 			
 			{% if friends %}
-			<h5 class="title"> Following </h5>
+			<h4 class="title"> Following </h4>
 				{% for friend in friends %}
 				<form action="/friend" method="GET">
 					<img src="../static/images/{{ friend.image }}" height="30px"style="border-radius:3px"></img>
 					<input type="submit" class="btn" name="friend-profile" value="{{ friend.username }}">
 					<input type="hidden" name="friend_id" value="{{ friend.user_id }}">
 				</form>
-				<br>
 				{% endfor %}
 			{% endif %}
-			<h5> {{ num_friends }} followers</h5>
+			<br>
 		</div>
 
 		<div class="col-sm-8 playlist-block">
@@ -32,15 +31,17 @@
 				<h3 class="title"> Playlists </h3>
 
 				{% for playlist in playlists %}
-				<p style="font-size:18px"> <button class="btn-color" id="{{ playlist.playlist_id }}" class="btn" style="margin: 5px"> + </button> {{ playlist.title }}</p> 
+				<p style="font-size:18px"> <button class="btn-color" id="plBtn{{ playlist.playlist_id }}" class="btn" style="margin: 5px"> + </button> {{ playlist.title }}</p> 
 
 					{% if playlist.tracks %}
-					<div class="list-group" id="show-tracks{{ playlist.playlist_id }}">
+					<div class="list-group" id="show-tracks-plBtn{{ playlist.playlist_id }}">
 						{% for track in playlist.tracks %}
 						<div class="list-group-item">
 							<h4 class="list-group-item-heading"> {{ track.artist }}: {{ track.title }} </h4>
-							<p class="list-group-item-text"><audio controls src="{{ track.audio }}">Your browser doesn't support the audio element.</audio>
-							</p>
+							<div id="track-div" class="list-group-item-text">
+								<audio controls id="trackId{{ track.track_id }}" src="{{ track.audio }}">Your browser doesn't support the audio element.</audio><br>
+								<button class="btn btn-none" id="re-trackId{{ track.track_id }}"><img src="static/rewind.svg" height="20px" alt="<<" /style="padding-right:5px">10</button><button class="btn btn-none" id="ff-trackId{{ track.track_id }}">30<img src="static/fast-forward.svg" height="20px" alt=">>" style="padding-left:5px"/></button>
+							</div>
 						</div>
 						{% endfor %}
 					</div>
@@ -62,7 +63,7 @@
 
 $(document).ready(function () {
 	$("[id*=show-tracks]").hide();
-	$("button").on('click', function() {
+	$("p [id*=plBtn]").on('click', function() {
 		let btn = $(this).html();
 		if (btn == "-") {
 			$(this).html("+");
@@ -71,9 +72,34 @@ $(document).ready(function () {
 			$(this).html("-");
 		}
 		let id = $(this).attr("id");
-		let thisDiv = "#show-tracks" + id;
+		let thisDiv = "#show-tracks-" + id;
 		$(thisDiv).toggle();
-		// $(this).html("-");
+	});
+
+});
+
+$(document).ready(function () {
+	$("[id*=re]").on('click', function() {
+		let reId = $(this).attr("id");
+		let trackId = reId.substring(3);
+		// console.log(trackId);
+		try {
+			$("#" + trackId)[0].currentTime -= 10;
+		}
+		catch {
+			null;
+		}
+	});
+	$("[id*=ff]").on('click', function() {
+		let ffId = $(this).attr("id");
+		let trackId = ffId.substring(3);
+		// console.log(trackId);
+		try {
+			$("#" + trackId)[0].currentTime += 30;
+		}
+		catch {
+			null;
+		}
 	});
 });
 

@@ -11,15 +11,15 @@
 			<img height="200px" src="../static/images/{{ user.image }}" class="profile-img" /><br>
 			{% endif %}
 
-			<button class="btn" id="edit-btn">Edit profile</button>
+			<button class="btn btn-none" id="edit-btn"><img src="static/menu.svg" height="20px" alt="Edit" /></button></button>
 			<div id="edit-form">
 				<form action="/upload" enctype="multipart/form-data" method="POST">
 				  Select image: <input type="file" name="photo"><br>
-				  <input type="submit" class="btn btn-color">
+				  <input type="submit" class="btn btn-color" value="Upload">
 				</form>
 			</div><br>
 			{% if friends %}
-			<h5 class="title"> Following </h5>
+			<h4 class="title"> Following </h4>
 				{% for friend in friends %}
 				<form action="/friend" method="GET">
 					<img src="../static/images/{{ friend.image }}" height="30px"style="border-radius:3px"></img>
@@ -29,10 +29,11 @@
 				{% endfor %}
 			{% endif %}
 			<br>
-			<h5> {{ num_friends }} followers </h5>
 			<form action="/search-users" method="GET">
-				<input type="search" name="search-friends" placeholder="Search users" id="search-friends">
-			<input type="submit" class="btn btn-color" value="Submit">
+				<input type="search" class="btn btn-search" name="search-friends" placeholder="Search users" id="search-friends">
+				<button type="submit" class="btn">
+					<i class="glyphicon glyphicon-search"></i>
+				</button>
 			</form>
 			<br>
 		</div>
@@ -40,29 +41,47 @@
 		<div class="col-sm-7 playlist-block">
 			<div id="playlist-parent">
 			{% if playlists %}
-			<h3 class="title"> Playlists </h3>
+			<h3 class="title"> Playlists <button class="btn btn-none" id="show-playlist-form"><img src="static/menu.svg" height="20px" alt="Add Playlist" /></button></h3>
+			<div id="playlist-form">
+				<form action="/add-playlist" method='post'>
+					<input type="text" name="playlist-name" placeholder="Playlist name" required> <input type='submit' class="btn btn-color" id='new-playlist' value="Create"/>
+				</form>
+			</div>
 			{% for playlist in playlists %}
-			<p id="playlist-para" style="font-size:18px"> <button class="btn-color" id="plBtn{{ playlist.playlist_id }}" style="margin: 5px"> + </button> {{ playlist.title }}</p> 
+			<p style="font-size:18px"> <button class="btn-color" id="plBtn{{ playlist.playlist_id }}" style="margin: 5px"> + </button> {{ playlist.title }} </p> 
 
-				{% if playlist.tracks %}
+				
 				<div class="list-group" id="show-tracks-plBtn{{ playlist.playlist_id }}">
+				{% if playlist.tracks %}
 					{% for track in playlist.tracks %}
 					<div class="list-group-item">
-					<h4 class="list-group-item-heading"> {{ track.artist }}: {{ track.title }} </h4>
-					<div id="track-div" class="list-group-item-text">
-						<audio controls id="trackId{{ track.track_id }}" src="{{ track.audio }}">Your browser doesn't support the audio element.</audio><br>
-						<button class="btn" id="re-trackId{{ track.track_id }}"><img src="static/rewind.svg" height="20px" alt="<< 10" /style="padding-right:5px">10</button><button class="btn" id="ff-trackId{{ track.track_id }}">30<img src="static/fast-forward.svg" height="20px" alt="30 >>" style="padding-left:5px"/></button>
+						<h4 class="list-group-item-heading"> {{ track.artist }}: {{ track.title }} </h4>
+						
+						<div id="track-div" class="list-group-item-text">
+							<audio controls id="trackId{{ track.track_id }}" src="{{ track.audio }}" preload="auto">Your browser doesn't support the audio element.</audio><br>
+							<button class="btn btn-none" id="re-trackId{{ track.track_id }}"><img src="static/rewind.svg" height="20px" alt="<<" /style="padding-right:5px">10</button><button class="btn btn-none" id="ff-trackId{{ track.track_id }}">30<img src="static/fast-forward.svg" height="20px" alt=">>" style="padding-left:5px"/></button>
+							<button id="menu-track{{ track.track_id }}" class="btn btn-none"><img src="static/menu.svg" height="20px" alt="Options" /></button> 
+							<div id="delete-track{{ track.track_id }}">
+								<form action="/delete-track" method="POST">
+									<button type="submit" class="btn btn-none">Delete Podcast</button>
+									<input type="hidden" name="track_id" value="{{ track.track_id }}">
+								</form>
+							</div>
+						</div>
+
+						
 
 					</div>
-					<form action="/delete-track" method="POST">
-						<input type="submit" class="btn" value="Delete"  id="delete-track">
-						<input type="hidden" name="track_id" value="{{ track.track_id }}">
-					</form>
-					</div>
-					
+				
 					{% endfor %}
-				</div>
+				
 				{% endif %}
+				<form action="/delete-playlist" method="POST">
+					<input type="submit" class="btn btn-none" value="Delete playlist"  id="delete-playlist">
+					<input type="hidden" name="playlist_id" value="{{ playlist.playlist_id }}">
+				</form>
+			</div>
+					
 
 			{% endfor %}
 
@@ -70,14 +89,7 @@
 				<p> No playlists </p>
 			{% endif %}
 			</div>
-			<button class="btn" id="show-playlist-form">Add Playlist</button>
-			<div id="playlist-form">
-				<form action="/add-playlist" method='post'>
-					<input type="text" name="playlist-name" placeholder="Playlist name" required> <input type='submit' class="btn btn-color" id='new-playlist' value="Create"/>
-				</form>
-			</div>
-			<br>
-			<br>
+
 		</div>
 	</div>
 
@@ -101,24 +113,22 @@ $(document).ready(function () {
 		$(thisDiv).toggle();
 		// $(this).html("-");
 	});
-
 });
 
-
 $(document).ready(function () {
-	// $("#track")[0].currentTime = 10;
-	// console.log("Storage" + ": " + localStorage.getItem(audioSrc));
-	try {
-		$("[id*=trackId]")[0].currentTime = localStorage.getItem(audioSrc);
-	}
-	catch (err) {
-		$("[id*=trackId]")[0].currentTime = 10;
-	}
-	$(".audio").on('click', function() {
-		let cTime = $(this).currentTime;
+	$("[id*=delete-track]").hide();
+	$("[id*=menu-track]").on('click', function() {
+		let id = $(this).attr("id");
+		let thisDiv = "#delete-" + id.substring(5);
+		$(thisDiv).toggle();
+	})
+
+	$("audio").on('click', function() {
+		let cTime = $(this)[0].currentTime;
 		console.log(cTime);
 		let audioSrc = $(this).attr("src");
 		localStorage.setItem(audioSrc, cTime);
+		console.log(audioSrc);
 
 		let savedTime = localStorage.getItem(audioSrc);
 		// localStorage.removeItem("track-item");
@@ -126,17 +136,27 @@ $(document).ready(function () {
 		let trackId = $(this).attr("id");
 		console.log(trackId);
 	});
+
 	$("[id*=re]").on('click', function() {
 		let reId = $(this).attr("id");
 		let trackId = reId.substring(3);
-		// console.log(trackId);
-		$("#" + trackId)[0].currentTime -= 10;
+		try {
+			$("#" + trackId)[0].currentTime -= 10;
+		}
+		catch {
+			null;
+		}
+		
 	});
 	$("[id*=ff]").on('click', function() {
 		let ffId = $(this).attr("id");
 		let trackId = ffId.substring(3);
-		// console.log(trackId);
-		$("#" + trackId)[0].currentTime += 30;
+		try {
+			$("#" + trackId)[0].currentTime += 30;
+		}
+		catch {
+			null;
+		}
 	});
 });
 

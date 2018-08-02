@@ -8,7 +8,7 @@
 		<h3 class="title"> Your Artists </h3>
 		<form action="/search-events">
 			{% for artist in artists %}
-				<input type="radio" name="search-terms" value="{{ artist }}">{{ artist }}
+				<input type="radio" name="search-terms" value="{{ artist }}" style="margin-right:10px">{{ artist }}
 				<br>
 			{% endfor %}
 			<br>
@@ -22,16 +22,22 @@
 {% if events %}
 
 <h2 class="title"> Events Near You </h2>
-<ol>
+<ul style="list-style-type:none">
 	{% for event in events %}
 
 		<li> <a href="{{ event['url'] }}"> {{ event['name']['text'] }} </a> </li>
-
+		{% if event.get('logo') %}
+			{% if event['logo'].get('url') %}
+			<img src="{{ event['logo']['url'] }}" height="50px" />
+			{% endif %}
+		{% else %}
+			<p> No image available. </p>
+		{% endif %}
+		<br><br>
 	{% endfor %}
-</ol>
-
-{% else %}
-<h3> No Related Events Near You </h3>
+</ul>
+{% elif not events and not artists %}
+<h4> No related events near you </h4>
 
 {% endif %}
 <br>

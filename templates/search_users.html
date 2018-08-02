@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
-
+<div class="container-fluid">
 <h2> Results </h2>
 
 {% for user in users %}
 <form action="/add-friend" method="POST">
-<p> {{ user.username }} <input type="submit" name="add-friend" value="Add friend">
+<p> {{ user.username }} <input type="submit" class="btn" name="add-friend" value="Add friend">
 	<input type="hidden" name="username" value="{{ user.username }}">
 </p>
 <br>
 </form>
 {% endfor %}
+</div>
 
 {% endblock %}
