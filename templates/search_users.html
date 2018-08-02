@@ -5,7 +5,7 @@
 
 {% for user in users %}
 <form action="/add-friend" method="POST">
-<p> {{ user.username }} <input type="submit" class="btn" name="add-friend" value="Add friend">
+<p> {{ user.username }} <input type="submit" class="btn btn-color" name="add-friend" value="add friend">
 	<input type="hidden" name="username" value="{{ user.username }}">
 </p>
 <br>

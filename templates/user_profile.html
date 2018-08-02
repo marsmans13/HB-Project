@@ -15,23 +15,23 @@
 			<div id="edit-form">
 				<form action="/upload" enctype="multipart/form-data" method="POST">
 				  Select image: <input type="file" name="photo"><br>
-				  <input type="submit" class="btn btn-color" value="Upload">
+				  <input type="submit" class="btn btn-color" value="upload">
 				</form>
 			</div><br>
 			{% if friends %}
-			<h4 class="title"> Following </h4>
+			<h4 class="title"> following </h4>
 				{% for friend in friends %}
 				<form action="/friend" method="GET">
-					<img src="../static/images/{{ friend.image }}" height="30px"style="border-radius:3px"></img>
-					<input type="submit" class="btn" name="friend-profile" value="{{ friend.username }}">
+					<img src="../static/images/{{ friend.image }}" class="friend-img"></img>
+					<button type="submit" class="btn btn-none" name="friend-profile">{{ friend.username }}</button>
 					<input type="hidden" name="friend_id" value="{{ friend.user_id }}">
 				</form>
 				{% endfor %}
 			{% endif %}
 			<br>
 			<form action="/search-users" method="GET">
-				<input type="search" class="btn btn-search" name="search-friends" placeholder="Search users" id="search-friends">
-				<button type="submit" class="btn">
+				<input type="search" class="btn btn-search" name="search-friends" placeholder="search users" id="search-friends">
+				<button type="submit" class="btn btn-none">
 					<i class="glyphicon glyphicon-search"></i>
 				</button>
 			</form>
@@ -40,13 +40,14 @@
 
 		<div class="col-sm-7 playlist-block">
 			<div id="playlist-parent">
-			{% if playlists %}
-			<h3 class="title"> Playlists <button class="btn btn-none" id="show-playlist-form"><img src="static/menu.svg" height="20px" alt="Add Playlist" /></button></h3>
+			
+			<h3 class="title"> playlists <button class="btn btn-none" id="show-playlist-form"><img src="static/menu.svg" height="20px" alt="Add Playlist" /></button></h3>
 			<div id="playlist-form">
 				<form action="/add-playlist" method='post'>
-					<input type="text" name="playlist-name" placeholder="Playlist name" required> <input type='submit' class="btn btn-color" id='new-playlist' value="Create"/>
+					<input type="text" name="playlist-name" class="btn btn-search" placeholder="playlist name" required> <input type='submit' class="btn btn-color" id='new-playlist' value="create"/>
 				</form>
 			</div>
+			{% if playlists %}
 			{% for playlist in playlists %}
 			<p style="font-size:18px"> <button class="btn-color" id="plBtn{{ playlist.playlist_id }}" style="margin: 5px"> + </button> {{ playlist.title }} </p> 
 
@@ -56,48 +57,44 @@
 					{% for track in playlist.tracks %}
 					<div class="list-group-item">
 						<h4 class="list-group-item-heading"> {{ track.artist }}: {{ track.title }} </h4>
-						
-						<div id="track-div" class="list-group-item-text">
+						<div class="col-sm-1">
+							<img src="{{ track.img }}" class="track-img" alt="artist image">
+						</div>
+						<div id="track-div" class="col-sm-offset-2 list-group-item-text">
 							<audio controls id="trackId{{ track.track_id }}" src="{{ track.audio }}" preload="auto">Your browser doesn't support the audio element.</audio><br>
-							<button class="btn btn-none" id="re-trackId{{ track.track_id }}"><img src="static/rewind.svg" height="20px" alt="<<" /style="padding-right:5px">10</button><button class="btn btn-none" id="ff-trackId{{ track.track_id }}">30<img src="static/fast-forward.svg" height="20px" alt=">>" style="padding-left:5px"/></button>
 							<button id="menu-track{{ track.track_id }}" class="btn btn-none"><img src="static/menu.svg" height="20px" alt="Options" /></button> 
+							
+							<button class="btn btn-none" id="re-trackId{{ track.track_id }}"><img src="static/rewind.svg" height="20px" alt="<<" /style="padding-right:5px">10</button><button class="btn btn-none" id="ff-trackId{{ track.track_id }}">30<img src="static/fast-forward.svg" height="20px" alt=">>" style="padding-left:5px"/></button>
 							<div id="delete-track{{ track.track_id }}">
 								<form action="/delete-track" method="POST">
-									<button type="submit" class="btn btn-none">Delete Podcast</button>
+									<button type="submit" class="btn btn-none">delete podcast</button>
 									<input type="hidden" name="track_id" value="{{ track.track_id }}">
 								</form>
 							</div>
 						</div>
 
-						
-
 					</div>
-				
 					{% endfor %}
 				
 				{% endif %}
 				<form action="/delete-playlist" method="POST">
-					<input type="submit" class="btn btn-none" value="Delete playlist"  id="delete-playlist">
+					<input type="submit" class="btn btn-none" value="delete playlist"  id="delete-playlist">
 					<input type="hidden" name="playlist_id" value="{{ playlist.playlist_id }}">
 				</form>
 			</div>
-					
-
 			{% endfor %}
 
 			{% else %}
-				<p> No playlists </p>
+				<p> no playlists </p>
 			{% endif %}
 			</div>
-
 		</div>
 	</div>
-
+<br><br>
 </div>
 
 
 <script src="static/user.js">
 </script>
-
 
 {% endblock %}

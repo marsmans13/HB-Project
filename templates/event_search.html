@@ -5,15 +5,17 @@
 {% if artists %}
 <div class="row">
 	<div class="col-sm-6">
-		<h3 class="title"> Your Artists </h3>
+		<h3 class="title"> your artists </h3>
 		<form action="/search-events">
 			{% for artist in artists %}
 				<input type="radio" name="search-terms" value="{{ artist }}" style="margin-right:10px">{{ artist }}
 				<br>
 			{% endfor %}
 			<br>
-			<input type="text" name="location" placeholder="Location" required>
-			<input type="submit" class="btn btn-color" value="Submit">
+			<input type="text" name="location" class="btn btn-search" placeholder="location" required>
+			<button type="submit" class="btn btn-none">
+				<i class="glyphicon glyphicon-search"></i>
+			</button>
 		</form>
 	</div>
 </div>
@@ -21,38 +23,44 @@
 
 {% if events %}
 
-<h2 class="title"> Events Near You </h2>
+<h2 class="title"> events near you </h2>
 <ul style="list-style-type:none">
 	{% for event in events %}
 
-		<li> <a href="{{ event['url'] }}"> {{ event['name']['text'] }} </a> </li>
+		<li> 
 		{% if event.get('logo') %}
 			{% if event['logo'].get('url') %}
-			<img src="{{ event['logo']['url'] }}" height="50px" />
+			<img class="event-img" src="{{ event['logo']['url'] }}" />
 			{% endif %}
 		{% else %}
-			<p> No image available. </p>
+			<p> image not available </p>
 		{% endif %}
+		<a href="{{ event['url'] }}"> {{ event['name']['text'] }} </a> 
+		</li>
 		<br><br>
 	{% endfor %}
 </ul>
 {% elif not events and not artists %}
-<h4> No related events near you </h4>
+<h4> no related events near you </h4>
 
 {% endif %}
 <br>
 <div class="row">
 	<div class="col-sm-6">
 
-		<h3 class="title"> Search Other Events </h3>
+		<h3 class="title"> search other events </h3>
 
 		<form action='/search-events'>
-			<input type="text" name="search-terms" placeholder="Search events" required>
-			<input type="text" name="location" placeholder="Location" required>
-			<input type="submit" class="btn btn-color" value="Submit">
+			<input type="text" name="search-terms" class="btn btn-search" placeholder="search events" required>
+			<input type="text" name="location" class="btn btn-search" placeholder="location" required>
+			<button type="submit" class="btn btn-none">
+				<i class="glyphicon glyphicon-search"></i>
+			</button>
 		</form>
 	</div>
 </div>
+<br>
+<br>
 
 
 </div>

@@ -2,12 +2,12 @@
 {% block content %}
 <div class="container-fluid">
 
-<h2> Top Podcasts </h2>
+<h2> top podcasts </h2>
 <hr>
 
 	{% for item in top_podcasts %}
 	<form action="/search" type="GET">
-		<p> {{ item }}. <input class="btn" type="submit" name="q" value="{{ top_podcasts[item][0] }}">
+		<p> {{ item }}. <input class="btn btn-none" type="submit" name="q" value="{{ top_podcasts[item][0] }}">
 		</p>
 	</form>
 	{% endfor %}

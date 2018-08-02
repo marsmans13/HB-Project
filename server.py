@@ -315,9 +315,10 @@ def add_track():
     artist = request.form.get("artist")
     title = request.form.get("title")
     rss = request.form.get("rss")
+    img = request.form.get("img")
     playlist_title = request.form.get("playlist")
 
-    track = Track(artist=artist, title=title, audio=rss)
+    track = Track(artist=artist, title=title, audio=rss, img=img)
     db.session.add(track)
     db.session.commit()
 
@@ -489,7 +490,7 @@ def get_events(location, search_input):
         'location.address': location,
         'q': search_terms,
     }
-    
+
     events = eventbrite.get('/events/search/', data=data)
 
     return events

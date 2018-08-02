@@ -3,36 +3,37 @@
 <div class="container-fluid">
 	
 {% if results %}
-<h2 class="title">Results</h2>
+<h2 class="title">results</h2>
 
 {% for result in results %}
 	{% if result.get('elements') %}
 
 	<h3 class="title"> {{ result['collectionName'] }}</h3>
 	<img src="{{ result['artworkUrl60'] }}" /><br><br>
-	<button class="btn btn-color" id="view{{ result['trackId'] }}"> View Tracks </button>
+	<button class="btn btn-color" id="view{{ result['trackId'] }}"> view tracks </button>
 	<br><br>
 	<div id="tracks{{ result['trackId'] }}">
 
 		{% for elem in result['elements'] %}
 			<form action="add-track" method="POST">
 				<div>
-					<button class="btn-color" id="expand{{ elem[2] }}" style="margin-right:5px">
+					<button class="btn-color" id="expand{{ result['trackId'] }}{{ elem[2] }}" style="margin-right:5px">
 						+
 					</button>{{ elem[1] }}
 					<input type="hidden" name="title" value="{{ elem[1] }}">
 					<input type="hidden" name="rss" value="{{ elem[0] }}">
+					<input type="hidden" name="img" value="{{ result['artworkUrl60'] }}">
 				</div>
 
 				{% if playlists %}
-				<div id="playlists{{ elem[2] }}">	
+				<div id="playlists{{ result['trackId'] }}{{ elem[2] }}">	
 					{% for playlist in playlists %}
 						
 						<input type="radio" name="playlist" value="{{ playlist.title }}" required>{{ playlist.title }}
 						<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
 						
 					{% endfor %}
-					<button class="btn btn-color" type="submit">Add</button>
+					<button class="btn btn-color" type="submit">add</button>
 				</div>
 				{% endif %}
 				
@@ -45,7 +46,7 @@
 
 {% endfor %}
 {% else %}
-<h3> Results not found </h3>
+<h3> results not found </h3>
 {% endif %}
 
 <script src="static/results.js">

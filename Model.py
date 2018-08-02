@@ -83,6 +83,7 @@ class Track(db.Model):
     artist = db.Column(db.String(75))
     title = db.Column(db.String(100), nullable=False)
     audio = db.Column(db.String(250), nullable=False)
+    img = db.Column(db.String(200))
 
 
     def __repr__(self):
@@ -92,8 +93,9 @@ class Track(db.Model):
         track_id = {}
         artist = {}
         title = {}
-        audio = {}>
-        """.format(self.track_id, self.artist, self.title, self.audio)
+        audio = {}
+        image = {}>
+        """.format(self.track_id, self.artist, self.title, self.audio, self.image)
 
         return s
 
