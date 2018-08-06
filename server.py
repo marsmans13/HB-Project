@@ -352,6 +352,7 @@ def delete_playlist():
 
     db.session.delete(playlist)
     db.session.commit()
+    flash("Playlist deleted.")
 
     return redirect("/user")
 
@@ -371,6 +372,7 @@ def delete_track():
 
     db.session.delete(track)
     db.session.commit()
+    flash("Track deleted.")
 
     return redirect("/user")
 

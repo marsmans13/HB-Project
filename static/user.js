@@ -1,5 +1,5 @@
 $(document).ready(function () {
-	$("[id*=show-tracks]").hide();
+	$("p [id*=plBtn]").html("-");
 	$("p [id*=plBtn]").on('click', function() {
 		let btn = $(this).html();
 		if (btn == "-") {
@@ -21,7 +21,7 @@ $(document).ready(function () {
 		let id = $(this).attr("id");
 		let thisDiv = "#delete-" + id.substring(5);
 		$(thisDiv).toggle();
-	})
+	});
 
 	// --------Need to store in database and set current time here-------
 

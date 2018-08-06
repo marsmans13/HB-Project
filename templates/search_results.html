@@ -4,12 +4,13 @@
 	
 {% if results %}
 <h2 class="title">results</h2>
+<br>
 
 {% for result in results %}
 	{% if result.get('elements') %}
 
 	<h3 class="title"> {{ result['collectionName'] }}</h3>
-	<img src="{{ result['artworkUrl60'] }}" /><br><br>
+	<img class="track-search-img" src="{{ result['artworkUrl60'] }}" /><br><br>
 	<button class="btn btn-color" id="view{{ result['trackId'] }}"> view tracks </button>
 	<br><br>
 	<div id="tracks{{ result['trackId'] }}">
@@ -28,15 +29,15 @@
 				{% if playlists %}
 				<div id="playlists{{ result['trackId'] }}{{ elem[2] }}">	
 					{% for playlist in playlists %}
-						
-						<input type="radio" name="playlist" value="{{ playlist.title }}" required>{{ playlist.title }}
+						<label for="{{ playlist.title }}">
+						<input type="radio" name="playlist" id="{{ playlist.title }}" value="{{ playlist.title }}" required style="margin-bottom:10px;margin-right:10px"> <span>{{ playlist.title }}</span>
 						<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
-						
+						</label>
+						<br>
 					{% endfor %}
 					<button class="btn btn-color" type="submit">add</button>
 				</div>
 				{% endif %}
-				
 			</form>
 			<br>
 			{% endfor %}

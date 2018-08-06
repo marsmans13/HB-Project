@@ -8,7 +8,9 @@
 		<h3 class="title"> your artists </h3>
 		<form action="/search-events">
 			{% for artist in artists %}
-				<input type="radio" name="search-terms" value="{{ artist }}" style="margin-right:10px">{{ artist }}
+			<label for="{{ artist }}">
+				<input type="radio" name="search-terms" value="{{ artist }}" id="{{ artist }}" style="margin-right:10px"> <span>{{ artist }}</span>
+			</label>
 				<br>
 			{% endfor %}
 			<br>
@@ -35,7 +37,7 @@
 		{% else %}
 			<p> image not available </p>
 		{% endif %}
-		<a href="{{ event['url'] }}"> {{ event['name']['text'] }} </a> 
+		<a href="{{ event['url'] }}" target="_blank"> {{ event['name']['text'] }} </a> 
 		</li>
 		<br><br>
 	{% endfor %}

@@ -1,14 +1,14 @@
 html {
 	height: 100%;
     background-repeat: no-repeat;
-	background: #8e9eab;  /* fallback for old browsers */
-	background: -webkit-linear-gradient(to bottom, #eef2f3, #8e9eab) fixed;  /* Chrome 10-25, Safari 5.1-6 */
-	background: linear-gradient(to bottom, #eef2f3, #8e9eab) fixed; /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+	background: #eef2f3;
+/*	background: -webkit-linear-gradient(to bottom, #eef2f3, #8e9eab) fixed;
+	background: linear-gradient(to bottom, #eef2f3, #8e9eab) fixed;*/
 }
 body {
 	background-color: transparent;
 	/*margin-top: 100px;*/
-	margin-bottom: 100px;
+	margin-bottom: 50px;
 	height: 100%;
 }
 audio {
@@ -25,9 +25,25 @@ button {
 	background-color: transparent;
 	color: #222;
 }
+input[type="radio"] {
+	display: none;
+}
+label input[type="radio"]:checked ~ span {
+  color: #e5491d;
+}
+label:hover {
+	color: #e5491d;
+}
+.alert-warning {
+	color: black;
+	background-color: white;
+}
 .container-fluid {
 	font-family: 'Montserrat', sans-serif;
 	color: #222;
+}
+.nav-title {
+	font-family: 'Raleway', sans-serif;
 }
 .navbar-default {
     /*background: #111122;*/
@@ -44,7 +60,18 @@ button {
     /*filter: alpha(opacity=50);*/
 }
 .form-signin {
-	background-color: transparent;
+	margin-top: 100px;
+	background-color: white;
+}
+.form-control-signin {
+	border: 0;
+	border-bottom: 1.5px solid #cccccc;
+	border-radius: 0;
+	outline: none;
+	background: transparent;
+	color: black;
+	box-shadow: none;
+	margin-top: 10px;
 }
 .list-group-item {
 	background-color: transparent;
@@ -52,6 +79,9 @@ button {
 /*	border-right: none;
 	border-left: none;
 	border-top: none;*/
+}
+.title {
+	font-family: 'Raleway', sans-serif;
 }
 .btn {
 	border: solid lightGrey 1px;
@@ -62,10 +92,16 @@ button {
     border-radius:0;
     border: solid black 1px;
 }
+.btn-color:hover {
+	color: #e5491d;
+}
 .btn-none {
 	border: none;
 	background-color: transparent;
 	color: #222;
+}
+.btn-none:hover {
+	color: #e5491d;
 }
 .btn-search {
 	text-align: left;
@@ -84,11 +120,26 @@ button {
 	height: 30px;
 	border-radius: 4px;
 	box-shadow: 2px 2px 4px rgba(0, 0, 0, .5);
+	transition: height 0.5s;
+	-webkit-transition: height 0.5s;
+}
+.friend-img:hover {
+	height: 50px;
+}
+.track-search-img {
+	height: 60px;
+	border-radius: 4px;
+	box-shadow: 2px 2px 4px rgba(0, 0, 0, .5);
 }
 .track-img {
 	height: 60px;
 	border-radius: 4px;
 	box-shadow: 2px 2px 4px rgba(0, 0, 0, .5);
+	transition: height 0.5s;
+	-webkit-transition: height 0.5s;
+}
+.track-img:hover {
+	height: 70px;
 }
 .event-img {
 	height: 50px;
@@ -97,10 +148,18 @@ button {
 	margin-right: 10px;
 }
 .playlist-block {
-/*	border-left: solid #777 1px;*/
+	height: 500px;
+	overflow-y: scroll;
 }
 #nav-text {
 	color: #222;
+}
+#nav-title {
+	color: #e5491d;
+	font-weight: bold;
+}
+#link:hover {
+	color: #e5491d;
 }
 #nav-text:hover {
 	color: #e5491d;

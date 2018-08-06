@@ -1,5 +1,5 @@
 $(document).ready(function () {
-	$("[id*=show-tracks]").hide();
+	$("p [id*=plBtn]").html("-");
 	$("p [id*=plBtn]").on('click', function() {
 		let btn = $(this).html();
 		if (btn == "-") {
@@ -11,8 +11,8 @@ $(document).ready(function () {
 		let id = $(this).attr("id");
 		let thisDiv = "#show-tracks-" + id;
 		$(thisDiv).toggle();
+		// $(this).html("-");
 	});
-
 });
 
 $(document).ready(function () {

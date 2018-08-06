@@ -6,7 +6,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
     </script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway" rel="stylesheet">
  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
  	<link rel="stylesheet" type="text/css" href="static/stylesheet.css">
 </head>
@@ -16,7 +16,7 @@
 	<nav class="navbar navbar-default">
 		<div class="container-fluid">
 			<div class="navbar-header">
-		      <a class="navbar-brand nav-text" id="nav-text" href="#">SmartCast</a>
+		      <a class="navbar-brand nav-text" id="nav-title" href="#">SmartCast</a>
 		    </div>
 		    <ul class="nav navbar-nav">
 		      <li><a id="nav-text" href="/user">home</a></li>
@@ -42,7 +42,12 @@
 	{% if messages %}
 
 	{% for message in messages %}
-	<div class="alert alert-warning"> {{ message }} </div>
+	<div class="alert alert-info"> 
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+		    <span aria-hidden="true">&times;</span>
+		</button>
+		{{ message }} 
+	</div>
 	{% endfor %}
 
 	{% endif %}

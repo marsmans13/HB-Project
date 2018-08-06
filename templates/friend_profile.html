@@ -5,7 +5,7 @@
 	<div class="row">
 		<div class="col-sm-3 user-info">
 
-			<h2> {{ friend.username }} </h2>
+			<h2 class="title"> {{ friend.username }} </h2>
 
 			{% if friend.image %}
 			<img height="200px" class="profile-img" src="../static/images/{{ friend.image }}" /><br>
@@ -15,8 +15,8 @@
 			<h4 class="title"> following </h4>
 				{% for friend in friends %}
 				<form action="/friend" method="GET">
-					<img src="../static/images/{{ friend.image }}" class="friend-img"></img>
-					<button type="submit" class="btn btn-none">{{ friend.username }}</button>
+					
+					<button type="submit" id="link" class="btn btn-none"><img src="../static/images/{{ friend.image }}" class="friend-img" style="margin-right:10px"></img>{{ friend.username }}</button>
 					<input type="hidden" name="friend_id" value="{{ friend.user_id }}">
 				</form>
 				{% endfor %}
@@ -31,7 +31,7 @@
 				<h3 class="title"> playlists </h3>
 
 				{% for playlist in playlists %}
-				<p style="font-size:18px"> <button class="btn-color" id="plBtn{{ playlist.playlist_id }}" class="btn" style="margin: 5px"> + </button> {{ playlist.title }}</p> 
+				<p style="font-size:18px"> <button class="btn-color" id="plBtn{{ playlist.playlist_id }}" class="btn" style="margin: 5px"> - </button> {{ playlist.title }}</p> 
 
 					{% if playlist.tracks %}
 					<div class="list-group" id="show-tracks-plBtn{{ playlist.playlist_id }}">
@@ -39,7 +39,11 @@
 						<div class="list-group-item">
 							<h4 class="list-group-item-heading"> {{ track.artist }}: {{ track.title }} </h4>
 							<div class="col-sm-1">
-								<img src="{{ track.img }}" class="track-img" alt="artist image">
+								<form action ="/search">
+									<button type="submit" class="btn btn-none" name="q" value="{{track.artist}}">
+									<img src="{{ track.img }}" class="track-img" alt="artist image">
+									</button>
+								</form>
 							</div>
 							<div id="track-div" class="list-group-item-text col-sm-offset-2">
 								<audio controls id="trackId{{ track.track_id }}" src="{{ track.audio }}">Your browser doesn't support the audio element.</audio><br>

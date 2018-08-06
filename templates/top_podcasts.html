@@ -7,7 +7,8 @@
 
 	{% for item in top_podcasts %}
 	<form action="/search" type="GET">
-		<p> {{ item }}. <input class="btn btn-none" type="submit" name="q" value="{{ top_podcasts[item][0] }}">
+		<p> {{ item }}. <button id="link" class="btn btn-none" type="submit">{{ top_podcasts[item][0] }}</button>
+			<input type="hidden" name="q" value="{{ top_podcasts[item][0] }}">
 		</p>
 	</form>
 	{% endfor %}
