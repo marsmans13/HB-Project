@@ -280,7 +280,7 @@ def get_top_rated():
     if client.get_toplist():
         toplist_results = client.get_toplist()
         for index, entry in enumerate(toplist_results):
-            top_podcasts[(index + 1)] = [entry.title, entry.mygpo_link]
+            top_podcasts[(index + 1)] = [entry.title, entry.logo_url]
 
     return render_template("top_podcasts.html", top_podcasts=top_podcasts)
 

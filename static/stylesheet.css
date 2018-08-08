@@ -25,9 +25,9 @@ button {
 	background-color: transparent;
 	color: #222;
 }
-input[type="radio"] {
+/*input[type="radio"] {
 	display: none;
-}
+}*/
 label input[type="radio"]:checked ~ span {
   color: #e5491d;
 }

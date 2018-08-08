@@ -5,8 +5,9 @@
 
 {% for user in users %}
 <form action="/add-friend" method="POST">
-<img src="../static/images/{{ user.image }}" class="friend-img"></img>
-<button type="submit" class="btn btn-none" id="link"> {{ user.username }} </button>
+	<button type="submit" class="btn btn-none" id="link">
+	<img src="../static/images/{{ user.image }}" class="friend-img" style="margin-right:10px"></img> {{ user.username }} 
+	</button>
 	<input type="hidden" name="add-friend" value="add friend">
 	<input type="hidden" name="username" value="{{ user.username }}">
 </p>

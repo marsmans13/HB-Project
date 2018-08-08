@@ -4,10 +4,14 @@ blinker==1.4
 certifi==2018.4.16
 chardet==3.0.4
 click==6.7
+coverage==4.5.1
 docutils==0.14
+eventbrite==3.3.3
 Flask==1.0.2
 Flask-DebugToolbar==0.10.1
+Flask-Login==0.4.1
 Flask-SQLAlchemy==2.3.2
+Flask-Uploads==0.2.1
 idna==2.7
 imagesize==1.0.0
 itsdangerous==0.24

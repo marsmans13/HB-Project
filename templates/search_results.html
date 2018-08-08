@@ -29,8 +29,8 @@
 				{% if playlists %}
 				<div id="playlists{{ result['trackId'] }}{{ elem[2] }}">	
 					{% for playlist in playlists %}
-						<label for="{{ playlist.title }}">
-						<input type="radio" name="playlist" id="{{ playlist.title }}" value="{{ playlist.title }}" required style="margin-bottom:10px;margin-right:10px"> <span>{{ playlist.title }}</span>
+						<label for="{{ playlist.title }}{{ result['trackId'] }}{{ elem[2] }}">
+						<input type="radio" name="playlist" id="{{ playlist.title }}{{ result['trackId'] }}{{ elem[2] }}" value="{{ playlist.title }}" required style="margin-bottom:10px;margin-right:10px"> <span>{{ playlist.title }}</span>
 						<input type="hidden" name="artist" value="{{ result['collectionName'] }}">
 						</label>
 						<br>
